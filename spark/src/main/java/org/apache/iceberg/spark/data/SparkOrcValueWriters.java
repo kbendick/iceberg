@@ -230,13 +230,14 @@ class SparkOrcValueWriters {
     }
 
     @Override
+    @SuppressWarnings("NarrowingCompoundAssignment")
     public void nonNullWrite(int rowId, int column, SpecializedGetters data, ColumnVector output) {
       ArrayData value = data.getArray(column);
       ListColumnVector cv = (ListColumnVector) output;
       // record the length and start of the list elements
       cv.lengths[rowId] = value.numElements();
       cv.offsets[rowId] = cv.childCount;
-      cv.childCount += cv.lengths[rowId];
+      cv.childCount += cv.lengths[rowId]; // potential lossy conversion
       // make sure the child is big enough
       cv.child.ensureSize(cv.childCount, true);
       // Add each element
@@ -256,6 +257,7 @@ class SparkOrcValueWriters {
     }
 
     @Override
+    @SuppressWarnings("NarrowingCompoundAssignment")
     public void nonNullWrite(int rowId, int column, SpecializedGetters data, ColumnVector output) {
       MapData map = data.getMap(column);
       ArrayData key = map.keyArray();
@@ -264,7 +266,7 @@ class SparkOrcValueWriters {
       // record the length and start of the list elements
       cv.lengths[rowId] = value.numElements();
       cv.offsets[rowId] = cv.childCount;
-      cv.childCount += cv.lengths[rowId];
+      cv.childCount += cv.lengths[rowId];  // potential lossy conversion
       // make sure the child is big enough
       cv.keys.ensureSize(cv.childCount, true);
       cv.values.ensureSize(cv.childCount, true);

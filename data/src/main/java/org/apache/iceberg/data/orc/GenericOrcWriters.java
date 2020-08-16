@@ -379,12 +379,13 @@ public class GenericOrcWriters {
     }
 
     @Override
+    @SuppressWarnings("NarrowingCompoundAssignment")
     public void nonNullWrite(int rowId, List<T> value, ColumnVector output) {
       ListColumnVector cv = (ListColumnVector) output;
       // record the length and start of the list elements
       cv.lengths[rowId] = value.size();
       cv.offsets[rowId] = cv.childCount;
-      cv.childCount += cv.lengths[rowId];
+      cv.childCount += cv.lengths[rowId]; // Potential lossy conversion
       // make sure the child is big enough
       cv.child.ensureSize(cv.childCount, true);
       // Add each element
@@ -409,6 +410,7 @@ public class GenericOrcWriters {
     }
 
     @Override
+    @SuppressWarnings("NarrowingCompoundAssignment")
     public void nonNullWrite(int rowId, Map<K, V> map, ColumnVector output) {
       List<K> keys = Lists.newArrayListWithExpectedSize(map.size());
       List<V> values = Lists.newArrayListWithExpectedSize(map.size());
@@ -420,7 +422,7 @@ public class GenericOrcWriters {
       // record the length and start of the list elements
       cv.lengths[rowId] = map.size();
       cv.offsets[rowId] = cv.childCount;
-      cv.childCount += cv.lengths[rowId];
+      cv.childCount += cv.lengths[rowId];  // potential lossy conversion.
       // make sure the child is big enough
       cv.keys.ensureSize(cv.childCount, true);
       cv.values.ensureSize(cv.childCount, true);
