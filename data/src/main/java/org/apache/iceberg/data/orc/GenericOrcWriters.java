@@ -422,7 +422,7 @@ public class GenericOrcWriters {
       // record the length and start of the list elements
       cv.lengths[rowId] = map.size();
       cv.offsets[rowId] = cv.childCount;
-      cv.childCount += cv.lengths[rowId];  // potential lossy conversion.
+      cv.childCount += cv.lengths[rowId];  // potential lossy conversion
       // make sure the child is big enough
       cv.keys.ensureSize(cv.childCount, true);
       cv.values.ensureSize(cv.childCount, true);
