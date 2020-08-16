@@ -48,6 +48,7 @@ public class Avro {
   private Avro() {
   }
 
+  @SuppressWarnings("Immutable")
   private enum CodecName {
     UNCOMPRESSED(CodecFactory.nullCodec()),
     SNAPPY(CodecFactory.snappyCodec()),
@@ -56,6 +57,7 @@ public class Avro {
     BROTLI(null),
     ZSTD(null);
 
+    // CodecFactory isn't declared as immutable.
     private final CodecFactory avroCodec;
 
     CodecName(CodecFactory avroCodec) {
