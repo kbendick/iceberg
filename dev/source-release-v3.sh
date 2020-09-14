@@ -71,7 +71,7 @@ tarball=$tagrc.tar.gz
 #      - given that this tag should be created during this release, it should be fine.
 #      - We might want to untag from the remote repo this tag defensively, to be sure that
 #      - rerunning is idempotent (aka that the tag wont exist in the remote yet)
-git archive $release_hash--worktree-attributes --prefix $tagrc/ -o $tarball $tagrc
+git archive $release_hash --worktree-attributes --prefix $tagrc/ -o $tarball $tagrc
 
 # sign the archive
 gpg --armor --output ${tarball}.asc --detach-sig $tarball
