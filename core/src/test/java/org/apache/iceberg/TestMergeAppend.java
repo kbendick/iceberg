@@ -238,6 +238,7 @@ public class TestMergeAppend extends TableTestBase {
   @Test
   public void testManifestMergeMinCount() throws IOException {
     Assert.assertEquals("Table should start empty", 0, listManifestFiles().size());
+    // TODO(kbendick) - It appears the manifests are 5661 bytes after allowing doc comments. Still investigating.
     table.updateProperties().set(TableProperties.MANIFEST_MIN_MERGE_COUNT, "2")
         // each manifest file is 5227 bytes, so 12000 bytes limit will give us 2 bins with 3 manifest/data files.
         .set(TableProperties.MANIFEST_TARGET_SIZE_BYTES, "12000")
@@ -263,6 +264,7 @@ public class TestMergeAppend extends TableTestBase {
     V2Assert.assertEquals("Last sequence number should be 1", 1, base.lastSequenceNumber());
     V1Assert.assertEquals("Table should end with last-sequence-number 0", 0, base.lastSequenceNumber());
 
+    // TODO(kbendick) - snap1's `allManifests` has a size of 2 here
     Assert.assertEquals("Should contain 2 merged manifest for first write",
         2, readMetadata().currentSnapshot().allManifests().size());
     validateManifest(snap1.allManifests().get(0),
