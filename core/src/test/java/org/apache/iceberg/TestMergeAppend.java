@@ -238,7 +238,7 @@ public class TestMergeAppend extends TableTestBase {
   @Test
   public void testManifestMergeMinCount() throws IOException {
     Assert.assertEquals("Table should start empty", 0, listManifestFiles().size());
-    // TODO(kbendick) - It appears the manifests are 5661 bytes after allowing doc comments. Still investigating.
+    // TODO(kbendick) - It appears the manifests are 6397 bytes for v2 manifests (after enabling doc comments).
     table.updateProperties().set(TableProperties.MANIFEST_MIN_MERGE_COUNT, "2")
         // each manifest file is 5227 bytes, so 12000 bytes limit will give us 2 bins with 3 manifest/data files.
         .set(TableProperties.MANIFEST_TARGET_SIZE_BYTES, "12000")
