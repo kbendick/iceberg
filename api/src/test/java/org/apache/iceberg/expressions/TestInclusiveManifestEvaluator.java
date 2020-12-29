@@ -394,6 +394,31 @@ public class TestInclusiveManifestEvaluator {
   }
 
   @Test
+  // TODO(kbendick) - Update this test. It's just copied from the above with the function changed currently.
+  public void testStringNotStartsWith() {
+    boolean shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "a"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "aa"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "dddd"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "z"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("no_nulls", "a"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "zzzz"), SPEC, false).eval(FILE);
+    Assert.assertFalse("Should skip: range doesn't match", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "1"), SPEC, false).eval(FILE);
+    Assert.assertFalse("Should skip: range doesn't match", shouldRead);
+  }
+
+  @Test
   public void testIntegerIn() {
     boolean shouldRead = ManifestEvaluator.forRowFilter(
         in("id", INT_MIN_VALUE - 25, INT_MIN_VALUE - 24), SPEC, true).eval(FILE);
