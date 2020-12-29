@@ -157,7 +157,7 @@ public class TestInclusiveManifestEvaluator {
         lessThan("id", 5), lessThanOrEqual("id", 30), equal("id", 70),
         greaterThan("id", 78), greaterThanOrEqual("id", 90), notEqual("id", 101),
         isNull("id"), notNull("id"), startsWith("all_nulls", "a"),
-        isNaN("float"), notNaN("float")
+        notStartsWith("all_nulls", "a"), isNaN("float"), notNaN("float")
     };
 
     for (Expression expr : exprs) {
