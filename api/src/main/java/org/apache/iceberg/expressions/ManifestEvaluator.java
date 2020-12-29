@@ -344,21 +344,25 @@ public class ManifestEvaluator {
 
       Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
-      ByteBuffer lower = fieldStats.lowerBound();
-      // truncate lower bound so that its length in bytes is not greater than the length of prefix
-      int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());
-      int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower, lowerLength), prefixAsBytes);
-      if (lowerCmp < 0) {
-        return ROWS_CANNOT_MATCH;
-      }
-
-      ByteBuffer upper = fieldStats.upperBound();
-      // truncate upper bound so that its length in bytes is not greater than the length of prefix
-      int upperLength = Math.min(prefixAsBytes.remaining(), upper.remaining());
-      int upperCmp = comparator.compare(BinaryUtil.truncateBinary(upper, upperLength), prefixAsBytes);
-      if (upperCmp >= 0) {
-        return ROWS_CANNOT_MATCH;
-      }
+      // TODO - Consider what we can say about NOT_STARTS_WITH based on the stats of the file.
+      // TODO - Can we really exclude anything other than all nulls?
+      // TODO - Possibly if truncated lowerBound == truncated upperBound, such that all elements start
+      // TODO - with the same prefix (of the given length) we can say that they cannot match.
+//      ByteBuffer lower = fieldStats.lowerBound();
+//      // truncate lower bound so that its length in bytes is not greater than the length of prefix
+//      int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());
+//      int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower, lowerLength), prefixAsBytes);
+//      if (lowerCmp < 0) {
+//        return ROWS_CANNOT_MATCH;
+//      }
+//
+//      ByteBuffer upper = fieldStats.upperBound();
+//      // truncate upper bound so that its length in bytes is not greater than the length of prefix
+//      int upperLength = Math.min(prefixAsBytes.remaining(), upper.remaining());
+//      int upperCmp = comparator.compare(BinaryUtil.truncateBinary(upper, upperLength), prefixAsBytes);
+//      if (upperCmp >= 0) {
+//        return ROWS_CANNOT_MATCH;
+//      }
 
       return ROWS_MIGHT_MATCH;
     }
