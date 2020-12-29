@@ -47,6 +47,7 @@ import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.types.Conversions.toByteBuffer;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -108,6 +109,9 @@ public class TestInclusiveManifestEvaluator {
 
     shouldRead = ManifestEvaluator.forRowFilter(startsWith("all_nulls", "asad"), SPEC, true).eval(FILE);
     Assert.assertFalse("Should skip: startsWith on all null column", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_nulls", "asad"), SPEC, true).eval(FILE);
+    Assert.assertFalse("Should skip: notStartsWith on all null column", shouldRead);
   }
 
   @Test
