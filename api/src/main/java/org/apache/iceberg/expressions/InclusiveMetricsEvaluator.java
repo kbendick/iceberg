@@ -372,6 +372,42 @@ public class InclusiveMetricsEvaluator {
       return ROWS_MIGHT_MATCH;
     }
 
+    @Override
+    // TODO(kbendick) - This functioon needs testing / revisiting.
+    public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
+      Integer id = ref.fieldId();
+
+      if (containsNullsOnly(id)) {
+        return ROWS_CANNOT_MATCH;
+      }
+
+      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+
+      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+
+      if (lowerBounds != null && lowerBounds.containsKey(id)) {
+        ByteBuffer lower = lowerBounds.get(id);
+        // truncate lower bound so that its length in bytes is not greater than the length of prefix
+        int length = Math.min(prefixAsBytes.remaining(), lower.remaining());
+        int cmp = comparator.compare(BinaryUtil.truncateBinary(lower, length), prefixAsBytes);
+        if (cmp <= 0) {
+          return ROWS_CANNOT_MATCH;
+        }
+      }
+
+      if (upperBounds != null && upperBounds.containsKey(id)) {
+        ByteBuffer upper = upperBounds.get(id);
+        // truncate upper bound so that its length in bytes is not greater than the length of prefix
+        int length = Math.min(prefixAsBytes.remaining(), upper.remaining());
+        int cmp = comparator.compare(BinaryUtil.truncateBinary(upper, length), prefixAsBytes);
+        if (cmp >= 0) {
+          return ROWS_CANNOT_MATCH;
+        }
+      }
+
+      return ROWS_MIGHT_MATCH;
+    }
+
     private boolean containsNullsOnly(Integer id) {
       return valueCounts != null && valueCounts.containsKey(id) &&
           nullCounts != null && nullCounts.containsKey(id) &&
