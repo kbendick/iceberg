@@ -331,7 +331,7 @@ public class ManifestEvaluator {
     }
 
     @Override
-    // TODO(kbendick) - Needs testing and further evaluation.
+    // TODO(kbendick) - Needs testing and further evaluation. Currently incorrect.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
       PartitionFieldSummary fieldStats = stats.get(pos);
@@ -348,7 +348,7 @@ public class ManifestEvaluator {
       // truncate lower bound so that its length in bytes is not greater than the length of prefix
       int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());
       int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower, lowerLength), prefixAsBytes);
-      if (lowerCmp <= 0) {
+      if (lowerCmp < 0) {
         return ROWS_CANNOT_MATCH;
       }
 
