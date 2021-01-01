@@ -381,31 +381,34 @@ public class InclusiveMetricsEvaluator {
         return ROWS_CANNOT_MATCH;
       }
 
-      ByteBuffer prefixAsBytes = lit.toByteBuffer();
-
-      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
-
-      if (lowerBounds != null && lowerBounds.containsKey(id)) {
-        ByteBuffer lower = lowerBounds.get(id);
-        // truncate lower bound so that its length in bytes is not greater than the length of prefix
-        int length = Math.min(prefixAsBytes.remaining(), lower.remaining());
-        int cmp = comparator.compare(BinaryUtil.truncateBinary(lower, length), prefixAsBytes);
-        if (cmp <= 0) {
-          return ROWS_CANNOT_MATCH;
-        }
-      }
-
-      if (upperBounds != null && upperBounds.containsKey(id)) {
-        ByteBuffer upper = upperBounds.get(id);
-        // truncate upper bound so that its length in bytes is not greater than the length of prefix
-        int length = Math.min(prefixAsBytes.remaining(), upper.remaining());
-        int cmp = comparator.compare(BinaryUtil.truncateBinary(upper, length), prefixAsBytes);
-        if (cmp >= 0) {
-          return ROWS_CANNOT_MATCH;
-        }
-      }
-
+      // TODO(kbendick) - Use the stats for more than just null checking.
       return ROWS_MIGHT_MATCH;
+
+//      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+//
+//      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+//
+//      if (lowerBounds != null && lowerBounds.containsKey(id)) {
+//        ByteBuffer lower = lowerBounds.get(id);
+//        // truncate lower bound so that its length in bytes is not greater than the length of prefix
+//        int length = Math.min(prefixAsBytes.remaining(), lower.remaining());
+//        int cmp = comparator.compare(BinaryUtil.truncateBinary(lower, length), prefixAsBytes);
+//        if (cmp <= 0) {
+//          return ROWS_CANNOT_MATCH;
+//        }
+//      }
+//
+//      if (upperBounds != null && upperBounds.containsKey(id)) {
+//        ByteBuffer upper = upperBounds.get(id);
+//        // truncate upper bound so that its length in bytes is not greater than the length of prefix
+//        int length = Math.min(prefixAsBytes.remaining(), upper.remaining());
+//        int cmp = comparator.compare(BinaryUtil.truncateBinary(upper, length), prefixAsBytes);
+//        if (cmp >= 0) {
+//          return ROWS_CANNOT_MATCH;
+//        }
+//      }
+//
+//      return ROWS_MIGHT_MATCH;
     }
 
     private boolean containsNullsOnly(Integer id) {

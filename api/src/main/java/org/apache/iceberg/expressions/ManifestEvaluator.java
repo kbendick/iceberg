@@ -338,39 +338,63 @@ public class ManifestEvaluator {
     //                  in this predicate, even though the
     //                  current implementation which relies on the minimum of the two
     //                  prefixes).
+    // TODO(kbendick) - It turns out lower bound is not the actual lowwer bound value
+    //                  of the file, but a value that's lower than all of the other values.
+    //                  I need to verify this but it makes checking for equality on the lower bound
+    //                  harder.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
       PartitionFieldSummary fieldStats = stats.get(pos);
 
-      if (fieldStats.lowerBound() == null) {
-        return ROWS_CANNOT_MATCH; // values are all null and literal cannot contain null
+      // Ensure that there are stats.
+
+      // values are all null (and stats exist) and literal cannot contain null
+      if (fieldStats.containsNull() && fieldStats.lowerBound() == null) {
+        return ROWS_CANNOT_MATCH;
       }
 
-      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+      // TODO(kbendick) - Use the stats for more than just null checking.
+      return ROWS_MIGHT_MATCH;
 
-      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
-
-      // TODO - Consider what we can say about NOT_STARTS_WITH based on the stats of the file.
-      // TODO - Can we really exclude anything other than all nulls?
-      // TODO - Possibly if truncated lowerBound == truncated upperBound, such that all elements start
-      // TODO - with the same prefix (of the given length) we can say that they cannot match.
+//      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+//
+//      // If lower bound == upper bound
+//
+//      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+//
 //      ByteBuffer lower = fieldStats.lowerBound();
+//      ByteBuffer upper = fieldStats.upperBound();
+//
+//      // Lower and upper are potentially the same value.
+//      // TODO(kbendick) - The spec says that each is less than or equal to all values.
+//      //                  Is it strictly the closest possible value that meets that condition
+//      //                  or could we have a file where the column's value is all "z" and lowerBound
+//      //                  winds up being "z"
+//      if (lower.remaining() == upper.remaining())
+//
+//      // TODO - Consider what we can say about NOT_STARTS_WITH based on the stats of the file.
+//      // TODO - Can we really exclude anything other than all nulls?
+//      // TODO - Possibly if truncated lowerBound == truncated upperBound, such that all elements start
+//      // TODO - with the same prefix (of the given length) we can say that they cannot match.
+//      //        to satisfy notStartsWith,
+//      // ByteBuffer lower = fieldStats.lowerBound();
 //      // truncate lower bound so that its length in bytes is not greater than the length of prefix
+//      // TODO - maybe truncating is a bad idea?
 //      int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());
 //      int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower, lowerLength), prefixAsBytes);
 //      if (lowerCmp < 0) {
 //        return ROWS_CANNOT_MATCH;
 //      }
 //
-//      ByteBuffer upper = fieldStats.upperBound();
+//      // ByteBuffer upper = fieldStats.upperBound();
 //      // truncate upper bound so that its length in bytes is not greater than the length of prefix
 //      int upperLength = Math.min(prefixAsBytes.remaining(), upper.remaining());
 //      int upperCmp = comparator.compare(BinaryUtil.truncateBinary(upper, upperLength), prefixAsBytes);
 //      if (upperCmp >= 0) {
 //        return ROWS_CANNOT_MATCH;
 //      }
-
-      return ROWS_MIGHT_MATCH;
+//
+//      return ROWS_MIGHT_MATCH;
     }
   }
 }
