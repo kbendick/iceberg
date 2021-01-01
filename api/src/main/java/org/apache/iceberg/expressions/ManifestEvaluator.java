@@ -332,6 +332,12 @@ public class ManifestEvaluator {
 
     @Override
     // TODO(kbendick) - Needs testing and further evaluation. Currently incorrect.
+    //                  Only cannot match - all nulls. all same initial substring
+    //                  of less than or equal to same length (e.g. a field
+    //                  of only aa does not start with aaa (and so should return true
+    //                  in this predicate, even though the
+    //                  current implementation which relies on the minimum of the two
+    //                  prefixes).
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
       PartitionFieldSummary fieldStats = stats.get(pos);

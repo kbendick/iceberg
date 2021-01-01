@@ -397,7 +397,7 @@ public class TestInclusiveManifestEvaluator {
   // TODO(kbendick) - Update this test. It's just copied from the above with the function changed currently.
   // TODO(kbendick) - I think the only thing we can say for certain that rows won't match based off of lower / upper
   //                  bound for not starts with is (1) case of all nulls or (2) case where lower bound is upper bound
-  //                  i.e. all strings start with the prefix range being the same as the one thats not supposed to match.
+  //                  i.e. all strings start with the prefix range being the same as the one that's not supposed to match.
   public void testStringNotStartsWith() {
     boolean shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "a"), SPEC, false).eval(FILE);
     Assert.assertTrue("Should read: range matches", shouldRead);
