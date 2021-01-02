@@ -161,4 +161,4 @@ def test_char_seq_starts_with(row_of):
     evaluator = exp.evaluator.Evaluator(struct, exp.expressions.Expressions.starts_with("s", "abc"))
     assert evaluator.eval(row_of(("abc",)))
     assert evaluator.eval(row_of(("abcd",)))
-    assert not evaluator.eval(row_of((exp.Literal.of("anteater"),)))
+    assert not evaluator.eval(row_of(("anteater",)))
