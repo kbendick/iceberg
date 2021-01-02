@@ -502,12 +502,12 @@ public class TestFilteredScan {
     IcebergSource source = new IcebergSource();
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new StringStartsWith("data", "junc"));
-    List<InputPartition<InternalRow>> plannedPartitions = reader.planInputPartitions();
 
     Assert.assertEquals(1, reader.planInputPartitions().size());
   }
 
   @Test
+  // TODO(kbendick) - Needs the residual not starts with evaluator.
   public void testPartitionedByIdNotStartsWith() {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
@@ -549,8 +549,6 @@ public class TestFilteredScan {
             .where("data NOT LIKE 'jun%'")
             .as(Encoders.STRING())
             .collectAsList();
-
-    df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
 
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");

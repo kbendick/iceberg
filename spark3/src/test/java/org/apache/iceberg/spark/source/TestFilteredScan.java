@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -431,7 +432,7 @@ public class TestFilteredScan {
     pushFilters(builder, new Not(new StringStartsWith("data", "junc")));
     Batch scan = builder.build().toBatch();
 
-    Assert.assertEquals(-10, scan.planInputPartitions().length);
+    Assert.assertEquals(9, scan.planInputPartitions().length);
   }
 
   @Test
@@ -451,6 +452,23 @@ public class TestFilteredScan {
   }
 
   @Test
+  // TODO(kbendick) - Needs the residual not starts with evaluator.
+  public void testPartitionedByIdNotStartsWith() {
+    Table table = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
+
+    CaseInsensitiveStringMap options = new CaseInsensitiveStringMap(ImmutableMap.of(
+            "path", table.location())
+    );
+
+    SparkScanBuilder builder = new SparkScanBuilder(spark, TABLES.load(options.get("path")), options);
+
+    pushFilters(builder, new Not(new StringStartsWith("data", "junc")));
+    Batch scan = builder.build().toBatch();
+
+    Assert.assertEquals(9, scan.planInputPartitions().length);
+  }
+
+  @Test
   public void testUnpartitionedStartsWith() {
     Dataset<Row> df = spark.read()
         .format("iceberg")
@@ -464,6 +482,25 @@ public class TestFilteredScan {
 
     Assert.assertEquals(1, matchedData.size());
     Assert.assertEquals("junction", matchedData.get(0));
+  }
+
+  @Test
+  public void testUnpartitionedNotStartsWith() {
+    Dataset<Row> df = spark.read()
+            .format("iceberg")
+            .option(SparkReadOptions.VECTORIZATION_ENABLED, String.valueOf(vectorized))
+            .load(unpartitioned.toString());
+
+    List<String> matchedData = df.select("data")
+            .where("data NOT LIKE 'jun%'")
+            .as(Encoders.STRING())
+            .collectAsList();
+
+    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
+            "brush", "trap", "element", "limited", "global", "goldfish");
+
+    Assert.assertEquals(9, matchedData.size());
+    Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
   }
 
   private static Record projectFlat(Schema projection, Record record) {
