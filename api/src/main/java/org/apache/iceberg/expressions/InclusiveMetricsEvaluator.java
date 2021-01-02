@@ -381,8 +381,48 @@ public class InclusiveMetricsEvaluator {
         return ROWS_CANNOT_MATCH;
       }
 
-      // TODO(kbendick) - Use the stats for more than just null checking.
+      // If min == max for at least the length of the lit to check, we can say does not match
+      // provided that the lit's length is <= the length of min and max
+      // (e.g. min = "z" and max = "z" and lit = "zz" should return ROWS_CANNOT_MATCH.
+      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+
+      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+
+      if (lowerBounds != null && lowerBounds.containsKey(id) &&
+              upperBounds != null && upperBounds.containsKey((id))) {
+        ByteBuffer lower = lowerBounds.get(id);
+        ByteBuffer upper = upperBounds.get(id);
+        // && prefixLength <= lowerLength && / && prefixLength <= upperLength are checked in
+        // byteBufferStartsWithPrefix
+        if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator) &&
+                byteBufferStartsWithPrefix(upper, prefixAsBytes, comparator)) {
+          return ROWS_CANNOT_MATCH;
+        }
+      }
+
       return ROWS_MIGHT_MATCH;
+    }
+//        if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator))
+//        // truncate lower bound so that its length in bytes is not greater than the length of prefix
+//        // TODO - Need to also check length. E.g. lowerBound = "a", upperBound = "a", lit = "aa"
+//        //        will give an incorrect result if we don't check for the length.
+//        int length = Math.min(prefixAsBytes.remaining(), lower.remaining());
+//        int cmp = comparator.compare(BinaryUtil.truncateBinary(lower, length), prefixAsBytes);
+//        if (cmp == 0) {
+//          return ROWS_CANNOT_MATCH;
+//        }
+//      if (upperBounds != null && upperBounds.containsKey(id)) {
+//        ByteBuffer upper = upperBounds.get(id);
+//        // truncate upper bound so that its length in bytes is not greater than the length of prefix
+//        int length = Math.min(prefixAsBytes.remaining(), upper.remaining());
+//        int cmp = comparator.compare(BinaryUtil.truncateBinary(upper, length), prefixAsBytes);
+//        if (cmp < 0) {
+//          return ROWS_CANNOT_MATCH;
+//        }
+//      }
+
+//      // TODO(kbendick) - Use the stats for more than just null checking.
+//      return ROWS_MIGHT_MATCH;
 
 //      ByteBuffer prefixAsBytes = lit.toByteBuffer();
 //
@@ -409,7 +449,7 @@ public class InclusiveMetricsEvaluator {
 //      }
 //
 //      return ROWS_MIGHT_MATCH;
-    }
+//    }
 
     private boolean containsNullsOnly(Integer id) {
       return valueCounts != null && valueCounts.containsKey(id) &&
@@ -420,6 +460,15 @@ public class InclusiveMetricsEvaluator {
     private boolean containsNaNsOnly(Integer id) {
       return nanCounts != null && nanCounts.containsKey(id) &&
           valueCounts != null && nanCounts.get(id).equals(valueCounts.get(id));
+    }
+
+    private boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
+      if (prefix.remaining() > bb.remaining()) {
+        return false;
+      }
+      int length = Math.min(prefix.remaining(), bb.remaining());
+      int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
+      return cmp == 0;
     }
   }
 }

@@ -59,6 +59,7 @@ import org.apache.spark.sql.sources.Filter;
 import org.apache.spark.sql.sources.GreaterThan;
 import org.apache.spark.sql.sources.In;
 import org.apache.spark.sql.sources.LessThan;
+import org.apache.spark.sql.sources.Not;
 import org.apache.spark.sql.sources.StringStartsWith;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
 import org.apache.spark.sql.sources.v2.reader.DataSourceReader;
@@ -470,6 +471,23 @@ public class TestFilteredScan {
   }
 
   @Test
+  // Spark does not have an explicit NotStringStartsWith, it's just NOT StringStartsWith.
+  // Given that iceberg has an explicit NOT_STARTS_WITH operator, this test seems useful.
+  public void testPartitionedByDataNotStartsWithFilter() {
+    File location = buildPartitionedTable("partitioned_by_data", PARTITION_BY_DATA, "data_ident", "data");
+
+    DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
+            "path", location.toString())
+    );
+
+    IcebergSource source = new IcebergSource();
+    DataSourceReader reader = source.createReader(options);
+    pushFilters(reader, new Not(new StringStartsWith("data", "junc")));
+
+    Assert.assertEquals(9, reader.planInputPartitions().size());
+  }
+
+  @Test
   public void testPartitionedByIdStartsWith() {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
@@ -480,8 +498,27 @@ public class TestFilteredScan {
     IcebergSource source = new IcebergSource();
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new StringStartsWith("data", "junc"));
+    List<InputPartition<InternalRow>> plannedPartitions = reader.planInputPartitions();
 
     Assert.assertEquals(1, reader.planInputPartitions().size());
+  }
+
+  @Test
+  public void testPartitionedByIdNotStartsWith() {
+    File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
+
+    DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
+            "path", location.toString())
+    );
+
+    IcebergSource source = new IcebergSource();
+    DataSourceReader reader = source.createReader(options);
+    pushFilters(reader, new Not(new StringStartsWith("data", "junc")));
+
+    List<InputPartition<InternalRow>> plannedPartitions = reader.planInputPartitions();
+    plannedPartitions.isEmpty();
+
+    Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 
   @Test

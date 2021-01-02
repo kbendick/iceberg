@@ -60,6 +60,7 @@ import org.apache.spark.sql.sources.EqualTo;
 import org.apache.spark.sql.sources.Filter;
 import org.apache.spark.sql.sources.GreaterThan;
 import org.apache.spark.sql.sources.LessThan;
+import org.apache.spark.sql.sources.Not;
 import org.apache.spark.sql.sources.StringStartsWith;
 import org.apache.spark.sql.types.IntegerType$;
 import org.apache.spark.sql.types.LongType$;
@@ -418,6 +419,19 @@ public class TestFilteredScan {
     Batch scan = builder.build().toBatch();
 
     Assert.assertEquals(1, scan.planInputPartitions().length);
+  }
+
+  @Test
+  public void testPartitionedByDataNotStartsWithFilter() {
+    Table table = buildPartitionedTable("partitioned_by_data", PARTITION_BY_DATA, "data_ident", "data");
+    CaseInsensitiveStringMap options = new CaseInsensitiveStringMap(ImmutableMap.of("path", table.location()));
+
+    SparkScanBuilder builder = new SparkScanBuilder(spark, TABLES.load(options.get("path")), options);
+
+    pushFilters(builder, new Not(new StringStartsWith("data", "junc")));
+    Batch scan = builder.build().toBatch();
+
+    Assert.assertEquals(-10, scan.planInputPartitions().length);
   }
 
   @Test
