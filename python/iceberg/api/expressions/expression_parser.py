@@ -93,8 +93,8 @@ op_map = {"=": "eq",
           "in": "in",
           "between": "between",
           "is": "is",
-          "startswith": "starts_with",
-          "starts_with": "starts_with"}
+          "startswith": "startswith",
+          "starts_with": "startswith"}  # TODO - Can we support INSTR(col, val) = 1 for starts with?
 
 
 # TODO(kbendick) - Should startswith be put in here?

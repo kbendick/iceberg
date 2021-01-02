@@ -26,51 +26,52 @@ from pytest import raises
 
 STRUCT = StructType.of([NestedField.required(13, "x", IntegerType.get()),
                        NestedField.required(14, "y", IntegerType.get()),
-                       NestedField.optional(15, "z", IntegerType.get())])
+                       NestedField.optional(15, "z", IntegerType.get()),
+                       NestedField.optional(16, "data", StringType.get())])
 
 
 def test_less_than(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.less_than("x", 7))
-    assert not evaluator.eval(row_of((7, 8, None)))
-    assert evaluator.eval(row_of((6, 8, None)))
+    assert not evaluator.eval(row_of((7, 8, None, None)))
+    assert evaluator.eval(row_of((6, 8, None, None)))
 
 
 def test_less_than_or_equal(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.less_than_or_equal("x", 7))
-    assert evaluator.eval(row_of((7, 8, None)))
-    assert evaluator.eval(row_of((6, 8, None)))
-    assert not evaluator.eval(row_of((8, 8, None)))
+    assert evaluator.eval(row_of((7, 8, None, None)))
+    assert evaluator.eval(row_of((6, 8, None, None)))
+    assert not evaluator.eval(row_of((8, 8, None, None)))
 
 
 def test_greater_than(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.greater_than("x", 7))
-    assert not evaluator.eval(row_of((7, 8, None)))
-    assert not evaluator.eval(row_of((6, 8, None)))
-    assert evaluator.eval(row_of((8, 8, None)))
+    assert not evaluator.eval(row_of((7, 8, None, None)))
+    assert not evaluator.eval(row_of((6, 8, None, None)))
+    assert evaluator.eval(row_of((8, 8, None, None)))
 
 
 def test_greater_than_or_equal(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.greater_than_or_equal("x", 7))
-    assert evaluator.eval(row_of((7, 8, None)))
-    assert not evaluator.eval(row_of((6, 8, None)))
-    assert evaluator.eval(row_of((8, 8, None)))
+    assert evaluator.eval(row_of((7, 8, None, None)))
+    assert not evaluator.eval(row_of((6, 8, None, None)))
+    assert evaluator.eval(row_of((8, 8, None, None)))
 
 
 def test_equal(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.equal("x", 7))
-    assert evaluator.eval(row_of((7, 8, None)))
+    assert evaluator.eval(row_of((7, 8, None, None)))
 
 
 def test_not_equal(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.not_equal("x", 7))
-    assert not evaluator.eval(row_of((7, 8, None)))
-    assert evaluator.eval(row_of((6, 8, None)))
+    assert not evaluator.eval(row_of((7, 8, None, None)))
+    assert evaluator.eval(row_of((6, 8, None, None)))
 
 
 def test_always_true(row_of):
@@ -88,23 +89,30 @@ def test_always_false(row_of):
 def test_is_null(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.is_null("z"))
-    assert evaluator.eval(row_of((1, 2, None)))
-    assert not evaluator.eval(row_of((1, 2, 3)))
+    assert evaluator.eval(row_of((1, 2, None, None)))
+    assert not evaluator.eval(row_of((1, 2, 3, "data")))
 
 
 def test_is_not_null(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.not_null("z"))
-    assert not evaluator.eval(row_of((1, 2, None)))
-    assert evaluator.eval(row_of((1, 2, 3)))
+    assert not evaluator.eval(row_of((1, 2, None, None)))
+    assert evaluator.eval(row_of((1, 2, 3, "peter")))
+
+
+def test_starts_with(row_of):
+    evaluator = exp.evaluator.Evaluator(STRUCT,
+                                        exp.expressions.Expressions.starts_with("data", "a"))
+    assert not evaluator.eval(row_of((1, 2, None, None)))
+    assert evaluator.eval(row_of((1, 2, 3, "anteater")))
 
 
 def test_and(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
                                         exp.expressions.Expressions.and_(exp.expressions.Expressions.equal("x", 7),
                                                                          exp.expressions.Expressions.not_null("z")))
-    assert evaluator.eval(row_of((7, 0, 3)))
-    assert not evaluator.eval(row_of((8, 0, 3)))
+    assert evaluator.eval(row_of((7, 0, 3, None)))
+    assert not evaluator.eval(row_of((8, 0, 3, None)))
     assert not evaluator.eval(row_of((7, 0, None)))
     assert not evaluator.eval(row_of((8, 0, None)))
 

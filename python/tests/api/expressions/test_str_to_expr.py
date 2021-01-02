@@ -101,6 +101,12 @@ def test_not_equal_alt_syntax():
     assert expected_expr == conv_expr
 
 
+def test_starts_with():
+    expected_expr = Expressions.starts_with("col_a", "'anteater'")
+    conv_expr = Expressions.convert_string_to_expr("col_a startswith 'anteater'")
+    assert expected_expr == conv_expr
+
+
 def test_compound_not_equal():
     expected_expr = Expressions.not_(Expressions.equal("col_a", 7))
     conv_expr = Expressions.convert_string_to_expr("not (col_a = 7)")

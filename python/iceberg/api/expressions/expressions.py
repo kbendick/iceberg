@@ -143,7 +143,8 @@ class Expressions(object):
                     "missing": (Expressions.is_null,),
                     "neq": (Expressions.not_equal,),
                     "not": (Expressions.not_,),
-                    "or": (Expressions.or_,)}  # TODO(kbendick) - string repr of starts_with here? Check pyspark.
+                    "or": (Expressions.or_,),
+                    "startswith": (Expressions.starts_with,)}  # TODO(kbendick) - string repr of startswith here? Check pyspark.
 
         return parse_expr_string(predicate_string, expr_map)
 

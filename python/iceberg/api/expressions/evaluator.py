@@ -90,3 +90,6 @@ class Evaluator(object):
 
         def not_in(self, ref, lit):
             return not self.in_(ref, lit.value)
+
+        def starts_with(self, ref, lit):
+            return self.starts_with(ref, lit.value)

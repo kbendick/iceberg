@@ -77,7 +77,8 @@ class ResidualVisitor(ExpressionVisitors.BoundExpressionVisitor):
     def starts_with(self, ref, lit):
         # TODO(kbendick) - Does there need to be a type cast using the `.to` and a type reference
         #                  (vs just calling str) after the ref.get(self.struct)
-        return self.always_true() if str(ref.get(self.struct)).startswith(str(lit.value))
+        # TODO(kbendick) - I dont think always_true is correct here for starts_with, I think we just check each time.
+        return self.always_true() if str(ref.get(self.struct)).startswith(str(lit.value)) else self.always_false()
 
     def not_(self, result):
         return Expressions.not_(result)
