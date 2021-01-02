@@ -186,3 +186,29 @@ class MetricsEvalVisitor(ExpressionVisitors.BoundExpressionVisitor):
 
     def not_in(self, ref, lit):
         return MetricsEvalVisitor.ROWS_MIGHT_MATCH
+
+    def starts_with(self, ref, lit):
+        id = ref.field_id
+        field = self.struct.field(id=id)
+
+        if field is None:
+            raise RuntimeError("Cannot filter by nested column: %s" % self.schema.find_field(id))
+
+        if self.lower_bounds is not None and id in self.lower_bounds:
+            lower = Conversions.from_byte_buffer(field.type, self.lower_bounds.get(id))
+            # TODO(kbendick) - Do we need to truncate here? I think we might.
+            #                  But should we truncate the byte buffer or just the casted value?
+            #                  Also consider using bit_length if need be after stripping the
+            #                  type signature from the byte buffer.
+            lower_len = min(len(lower), len(lit))
+            if lower[:lower_len] > lit.value:
+                return MetricsEvalVisitor.ROWS_CANNOT_MATCH
+
+        if self.upper_bounds is not None and id in self.upper_bounds:
+            upper = Conversions.from_byte_buffer(field.type, self.upper_bounds.get(id))
+            upper_len = min(len(upper), len(lit))
+            if upper[:upper_len] < lit.value:
+                return MetricsEvalVisitor.ROWS_CANNOT_MATCH
+
+        return MetricsEvalVisitor.ROWS_MIGHT_MATCH
+

@@ -215,14 +215,14 @@ def file():
 
 @pytest.fixture(scope="session")
 def strict_file():
-    return MockDataFile("file.avro",
-                        TestHelpers.Row.of(),
-                        50,
-                        {4: 50, 5: 50, 6: 50},
-                        {4: 50, 5: 10, 6: 0},
-                        {1: Conversions.to_byte_buffer(IntegerType.get(), 30),
+    return MockDataFile(path="file.avro",
+                        partition=TestHelpers.Row.of(),
+                        record_count=50,
+                        value_counts={4: 50, 5: 50, 6: 50},
+                        null_value_counts={4: 50, 5: 10, 6: 0},
+                        lower_bounds={1: Conversions.to_byte_buffer(IntegerType.get(), 30),
                          7: Conversions.to_byte_buffer(IntegerType.get(), 5)},
-                        {1: Conversions.to_byte_buffer(IntegerType.get(), 79),
+                        upper_bounds={1: Conversions.to_byte_buffer(IntegerType.get(), 79),
                          7: Conversions.to_byte_buffer(IntegerType.get(), 5)}
                         )
 
