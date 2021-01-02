@@ -65,6 +65,8 @@ public class Expressions {
     return new Or(left, right);
   }
 
+  // TODO(kbendick) - Might need to add a special case here for child instanceof StartsWith
+  //                  to return the notStartsWith implementation.
   public static Expression not(Expression child) {
     Preconditions.checkNotNull(child, "Child expression cannot be null.");
     if (child == alwaysTrue()) {

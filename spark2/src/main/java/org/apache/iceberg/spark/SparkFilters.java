@@ -133,6 +133,7 @@ public class SparkFilters {
                   .map(SparkFilters::convertLiteral)
                   .collect(Collectors.toList()));
 
+        // TODO - Do we need a special case here to handle the case where the child is starts with?
         case NOT:
           Not notFilter = (Not) filter;
           Expression child = convert(notFilter.child());
