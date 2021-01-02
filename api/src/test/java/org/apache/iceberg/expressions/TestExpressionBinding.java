@@ -21,6 +21,7 @@ package org.apache.iceberg.expressions;
 
 import org.apache.iceberg.TestHelpers;
 import org.apache.iceberg.exceptions.ValidationException;
+import org.apache.iceberg.expressions.Expression.Operation;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
 import org.junit.Assert;
@@ -34,6 +35,7 @@ import static org.apache.iceberg.expressions.Expressions.equal;
 import static org.apache.iceberg.expressions.Expressions.greaterThan;
 import static org.apache.iceberg.expressions.Expressions.lessThan;
 import static org.apache.iceberg.expressions.Expressions.not;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -142,6 +144,18 @@ public class TestExpressionBinding {
     // make sure the expression is a StartsWith
     BoundPredicate<?> pred = TestHelpers.assertAndUnwrap(boundExpr, BoundPredicate.class);
     Assert.assertEquals("Should be right operation", Expression.Operation.STARTS_WITH, pred.op());
+    Assert.assertEquals("Should bind s correctly", 0, pred.term().ref().fieldId());
+  }
+
+  @Test
+  public void testNotStartsWith() {
+    StructType struct = StructType.of(required(0, "s", Types.StringType.get()));
+    Expression expr = notStartsWith("s", "abc");
+    Expression boundExpr = Binder.bind(struct, expr);
+    TestHelpers.assertAllReferencesBound("NotStartsWith", boundExpr);
+    // Make sure the expression is a NotStartsWith
+    BoundPredicate<?> pred = TestHelpers.assertAndUnwrap(boundExpr, BoundPredicate.class);
+    Assert.assertEquals("Should be right operation", Operation.NOT_STARTS_WITH, pred.op());
     Assert.assertEquals("Should bind s correctly", 0, pred.term().ref().fieldId());
   }
 
