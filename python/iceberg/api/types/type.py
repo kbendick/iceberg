@@ -63,6 +63,8 @@ class Type(object):
     def as_list_type(self):
         raise ValueError("Not a list type: " + self)
 
+    # TODO - Should we consider deprecating this?
+    # @DeprecationWarning
     def asMapType(self):
         raise ValueError("Not a map type: " + self)
 

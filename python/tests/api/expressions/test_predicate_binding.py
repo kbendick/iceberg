@@ -198,6 +198,7 @@ def test_not_null(assert_and_unwrap):
     required = StructType.of([NestedField.required(22, "s", StringType.get())])
     assert Expressions.always_true() == unbound.bind(required)
 
+
 def test_starts_with(assert_and_unwrap):
     optional = StructType.of([NestedField.optional(23, "s", StringType.get())])
     unbound = UnboundPredicate(Operation.STARTS_WITH, Expressions.ref("s"), "prefix")
