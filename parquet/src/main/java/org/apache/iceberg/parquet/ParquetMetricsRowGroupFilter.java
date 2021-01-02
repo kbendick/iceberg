@@ -546,7 +546,8 @@ public class ParquetMetricsRowGroupFilter {
 
   // TODO(kbendick) - Document and possibly move to the BinaryUtil. Also consider refactoring startsWith to
   //                  use this as well.
-  private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
+  private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix,
+                                                    Comparator<ByteBuffer> comparator) {
     if (bb == null || prefix == null) {
       return false;  // nulls should not be included in the output of any starts with operation.
     }
