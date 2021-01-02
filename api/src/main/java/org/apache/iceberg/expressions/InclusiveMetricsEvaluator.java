@@ -462,6 +462,7 @@ public class InclusiveMetricsEvaluator {
           valueCounts != null && nanCounts.get(id).equals(valueCounts.get(id));
     }
 
+    // TODO(kbendick) - Make this a shared utility function, possibly in BinaryUtil?
     private boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
       if (prefix.remaining() > bb.remaining()) {
         return false;
