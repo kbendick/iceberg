@@ -45,9 +45,9 @@ import static org.apache.iceberg.expressions.Expressions.notEqual;
 import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
-import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.types.Conversions.toByteBuffer;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
@@ -59,7 +59,8 @@ public class TestInclusiveManifestEvaluator {
       optional(5, "some_nulls", Types.StringType.get()),
       optional(6, "no_nulls", Types.StringType.get()),
       optional(7, "float", Types.FloatType.get()),
-      optional(8, "all_nulls_double", Types.DoubleType.get())
+      optional(8, "all_nulls_double", Types.DoubleType.get()),
+      optional(9, "all_same_value_or_null", Types.StringType.get())
   );
 
   private static final PartitionSpec SPEC = PartitionSpec.builderFor(SCHEMA)
@@ -70,6 +71,7 @@ public class TestInclusiveManifestEvaluator {
       .identity("no_nulls")
       .identity("float")
       .identity("all_nulls_double")
+      .identity("all_same_value_or_null")
       .build();
 
   private static final int INT_MIN_VALUE = 30;
@@ -93,7 +95,8 @@ public class TestInclusiveManifestEvaluator {
           new TestHelpers.TestFieldSummary(false,
               toByteBuffer(Types.FloatType.get(), 0F),
               toByteBuffer(Types.FloatType.get(), 20F)),
-          new TestHelpers.TestFieldSummary(true, null, null)
+          new TestHelpers.TestFieldSummary(true, null, null),
+          new TestHelpers.TestFieldSummary(true, STRING_MIN, STRING_MIN)
       ));
 
   @Test
@@ -397,7 +400,8 @@ public class TestInclusiveManifestEvaluator {
   // TODO(kbendick) - Update this test. It's just copied from the above with the function changed currently.
   // TODO(kbendick) - I think the only thing we can say for certain that rows won't match based off of lower / upper
   //                  bound for not starts with is (1) case of all nulls or (2) case where lower bound is upper bound
-  //                  i.e. all strings start with the prefix range being the same as the one that's not supposed to match.
+  //                  i.e. all strings start with the prefix range being the same as the one that's not
+  //                  supposed to match.
   public void testStringNotStartsWith() {
     boolean shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "a"), SPEC, false).eval(FILE);
     Assert.assertTrue("Should read: range matches", shouldRead);
@@ -415,10 +419,16 @@ public class TestInclusiveManifestEvaluator {
     Assert.assertTrue("Should read: range matches", shouldRead);
 
     shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "zzzz"), SPEC, false).eval(FILE);
-    Assert.assertFalse("Should read: range matches", shouldRead);
+    Assert.assertTrue("Should read: range matches", shouldRead);
 
     shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "1"), SPEC, false).eval(FILE);
-    Assert.assertFalse("Should read: range matches", shouldRead);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "a"), SPEC, false).eval(FILE);
+    Assert.assertFalse("Should not read: all column values start with \"a\"", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "A"), SPEC, true).eval(FILE);
+    Assert.assertTrue("Should read: range matches when case sensitive", shouldRead);
   }
 
   @Test
