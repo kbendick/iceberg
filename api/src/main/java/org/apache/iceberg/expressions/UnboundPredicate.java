@@ -244,6 +244,10 @@ public class UnboundPredicate<T> extends Predicate<T, UnboundTerm<T>> implements
       case NOT_EQ:
         return term() + " != " + literal();
       case STARTS_WITH:
+        // TODO(kbendick) - Should this be starts_with or startswith like the python (and spark sql) representations?
+        // For spark scala, StringStartsWith (which is the equivalent Filter) uses
+        //       case StringStartsWith(attr, value) => s"${quote(attr)} LIKE '${value}%'"
+        // return term() + "LIKE \'" + literal() + "%\'"
         return term() + " startsWith \"" + literal() + "\"";
       case IN:
         return term() + " in (" + COMMA.join(literals()) + ")";

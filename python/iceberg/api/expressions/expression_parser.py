@@ -36,8 +36,9 @@ from pyparsing import (
 
 _logger = logging.getLogger(__name__)
 
-AND, OR, IN, IS, NOT, NULL, BETWEEN = map(
-    CaselessKeyword, "and or in is not null between".split()
+# TODO(kbendick) - Not sure if starts_with should be defind here on in binop.
+AND, OR, IN, IS, NOT, NULL, BETWEEN, STARTS_WITH = map(
+    CaselessKeyword, "and or in is not null between startswith".split()
 )
 NOT_NULL = NOT + NULL
 
@@ -57,6 +58,7 @@ whereCondition = Group(
     | (columnName + IN + Group("(" + delimitedList(columnRval) + ")"))
     | (columnName + IS + (NULL | NOT_NULL))
     | (columnName + BETWEEN + columnRval + AND + columnRval)
+    | (columnName + STARTS_WITH + columnRval)
 
 )
 
@@ -90,9 +92,13 @@ op_map = {"=": "eq",
           "and": "and",
           "in": "in",
           "between": "between",
-          "is": "is"}
+          "is": "is",
+          "startswith": "starts_with",
+          "starts_with": "starts_with"}
 
 
+# TODO(kbendick) - Should startswith be put in here?
+#                  Maybe instr would be the appropriate sql expression?
 def get_expr_tree(tokens):
     if isinstance(tokens, (str, int)):
         return tokens

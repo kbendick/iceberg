@@ -74,6 +74,11 @@ class ResidualVisitor(ExpressionVisitors.BoundExpressionVisitor):
     def not_eq(self, ref, lit):
         return self.always_true() if ref.get(self.struct) != lit.value else self.always_false()
 
+    def starts_with(self, ref, lit):
+        # TODO(kbendick) - Does there need to be a type cast using the `.to` and a type reference
+        #                  (vs just calling str) after the ref.get(self.struct)
+        return self.always_true() if str(ref.get(self.struct)).startswith(str(lit.value))
+
     def not_(self, result):
         return Expressions.not_(result)
 
