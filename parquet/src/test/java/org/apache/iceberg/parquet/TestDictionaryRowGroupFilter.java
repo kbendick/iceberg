@@ -66,6 +66,7 @@ import static org.apache.iceberg.expressions.Expressions.notEqual;
 import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 import static org.apache.iceberg.types.Types.NestedField.optional;
@@ -322,6 +323,43 @@ public class TestDictionaryRowGroupFilter {
         .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
     Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
   }
+
+  @Test
+  // TODO(kbendick) - Fill out this test - it's currently just a copy pasta of testStartsWith.
+  public void testNotStartsWith() {
+    boolean shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("non_dict", "re"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: no dictionary", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("required", "re"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("required", "req"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("some_nulls", "so"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("no_stats", UUID.randomUUID().toString()))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertFalse("Should skip: no stats but dictionary is present", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("required", "reqs"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("some_nulls", "somex"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("no_nulls", "xxx"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
+  }
+
 
   @Test
   public void testMissingColumn() {

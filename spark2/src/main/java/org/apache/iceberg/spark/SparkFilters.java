@@ -56,6 +56,7 @@ import static org.apache.iceberg.expressions.Expressions.lessThan;
 import static org.apache.iceberg.expressions.Expressions.lessThanOrEqual;
 import static org.apache.iceberg.expressions.Expressions.not;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 
@@ -137,6 +138,9 @@ public class SparkFilters {
         case NOT:
           Not notFilter = (Not) filter;
           Expression child = convert(notFilter.child());
+          if (child != null && child instanceof StringStartsWith) {
+            return notStartsWith(child.)
+          }
           if (child != null) {
             return not(child);
           }
