@@ -54,6 +54,7 @@ class Operation(Enum):
     NOT = "NOT"
     AND = "AND"
     OR = "OR"
+    STARTS_WITH = "STARTS_WITH"
 
     def negate(self): # noqa
         if self == Operation.IS_NULL:

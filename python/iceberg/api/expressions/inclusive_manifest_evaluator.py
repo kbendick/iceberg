@@ -159,3 +159,21 @@ class ManifestEvalVisitor(ExpressionVisitors.BoundExpressionVisitor):
 
     def not_in(self, ref, lit):
         return ROWS_MIGHT_MATCH
+
+    def starts_with(self, ref, lit):
+        field_stats = self.stats[ref.pos]
+        # Values are all null and literal cannot contain null.
+        if field_stats.lower_bound() is None:
+            return ROWS_CANNOT_MATCH
+
+        lower = Conversions.from_byte_buffer(ref.type, field_stats.lower_bound())
+        lower_len = min(len(lower), len(lit.value))
+        if lower[:lower_len] > lit.value:
+            return ROWS_CANNOT_MATCH
+
+        upper = Conversions.from_byte_buffer(ref.type, field_stats.upper_bound())
+        upper_len = min(len(upper), len(lit.value))
+        if upper[:upper_len] < lit.value:
+            return ROWS_CANNOT_MATCH
+
+        return ROWS_MIGHT_MATCH

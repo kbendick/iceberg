@@ -99,6 +99,10 @@ class Expressions(object):
         return UnboundPredicate(Operation.NOT_EQ, Expressions.ref(name), value)
 
     @staticmethod
+    def starts_with(name, value):
+        return UnboundPredicate(Operation.STARTS_WITH, Expressions.ref(name), value)
+
+    @staticmethod
     def predicate(op, name, value=None, lit=None):
         if value is not None and op not in (Operation.IS_NULL, Operation.NOT_NULL):
             return UnboundPredicate(op, Expressions.ref(name), value)
@@ -139,7 +143,7 @@ class Expressions(object):
                     "missing": (Expressions.is_null,),
                     "neq": (Expressions.not_equal,),
                     "not": (Expressions.not_,),
-                    "or": (Expressions.or_,)}
+                    "or": (Expressions.or_,)}  # TODO(kbendick) - string repr of starts_with here? Check pyspark.
 
         return parse_expr_string(predicate_string, expr_map)
 
@@ -221,6 +225,10 @@ class ExpressionVisitors(object):
         def not_in(self, ref, lit):
             return None
 
+        # TODO(kbendick) - Are we returning None or NotImplementedError() or is this just a change in style?
+        def starts_with(self, ref, lit):
+            return None
+
         def predicate(self, pred): # noqa
 
             if isinstance(pred, UnboundPredicate):
@@ -246,6 +254,8 @@ class ExpressionVisitors(object):
                 return self.in_(pred.ref, pred.lit)
             elif pred.op == Operation.NOT_IN:
                 return self.not_in(pred.ref, pred.lit)
+            elif pred.op == Operation.STARTS_WITH:
+                return self.starts_with(pred.ref, pred.lit)
             else:
                 raise RuntimeError("Unknown operation for Predicate: {}".format(pred.op))
 
