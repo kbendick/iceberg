@@ -134,13 +134,18 @@ public class SparkFilters {
                   .map(SparkFilters::convertLiteral)
                   .collect(Collectors.toList()));
 
-        // TODO - Do we need a special case here to handle the case where the child is starts with?
+        // TODO - Do we benefit from having a special case here for NOT StringStartsWith
+        //        to be able to use the Iceberg NOT_STARTS_WITH operation?
         case NOT:
           Not notFilter = (Not) filter;
-          Expression child = convert(notFilter.child());
-          if (child != null && child instanceof StringStartsWith) {
-            return notStartsWith(child.)
+          Filter sparkChild = notFilter.child();
+          // Special case to use the Iceberg NOT_STARTS_WITH operator for
+          // Spark Not StringStartsWith
+          if (sparkChild instanceof StringStartsWith) {
+            StringStartsWith castedChild = (StringStartsWith) sparkChild;
+            return notStartsWith(castedChild.attribute(), castedChild.value());
           }
+          Expression child = convert(notFilter.child());
           if (child != null) {
             return not(child);
           }
