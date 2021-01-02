@@ -362,6 +362,8 @@ def not_eq_uc(request):
                         Literal.of("2017-11-29T11:30:07.123").to(TimestampType.without_timezone()),
                         Literal.of("2017-11-29T11:30:07.123+01:00").to(TimestampType.with_timezone()),
                         Literal.of("abc"),
+                        Literal.of("peter"),
+                        Literal.of(bytes([0x61, 0x6E, 0x74, 0x65, 0x61, 0x74, 0x65, 0x72])).to(StringType.get()),
                         Literal.of(uuid.uuid4()),
                         Literal.of(bytes([0x01, 0x02, 0x03])).to(FixedType.of_length(3)),
                         Literal.of(bytes([0x03, 0x04, 0x05, 0x06])).to(BinaryType.get()),

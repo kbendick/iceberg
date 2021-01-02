@@ -92,4 +92,4 @@ class Evaluator(object):
             return not self.in_(ref, lit.value)
 
         def starts_with(self, ref, lit):
-            return self.starts_with(ref, lit.value)
+            return self.starts_with(ref.get(self.struct), lit.value)

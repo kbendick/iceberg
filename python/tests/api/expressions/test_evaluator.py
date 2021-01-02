@@ -102,7 +102,7 @@ def test_is_not_null(row_of):
 
 def test_starts_with(row_of):
     evaluator = exp.evaluator.Evaluator(STRUCT,
-                                        exp.expressions.Expressions.starts_with("data", "a"))
+                                        exp.expressions.Expressions.starts_with("data", "antea"))
     assert not evaluator.eval(row_of((1, 2, None, None)))
     assert evaluator.eval(row_of((1, 2, 3, "anteater")))
 
@@ -154,3 +154,11 @@ def test_char_seq_value(row_of):
     evaluator = exp.evaluator.Evaluator(struct, exp.expressions.Expressions.equal("s", "abc"))
     assert evaluator.eval(row_of(("abc",)))
     assert not evaluator.eval(row_of(("abcd",)))
+
+
+def test_char_seq_starts_with(row_of):
+    struct = StructType.of([NestedField.required(34, "s", StringType.get())])
+    evaluator = exp.evaluator.Evaluator(struct, exp.expressions.Expressions.starts_with("s", "abc"))
+    assert evaluator.eval(row_of(("abc",)))
+    assert evaluator.eval(row_of(("abcd",)))
+    assert not evaluator.eval(row_of((exp.Literal.of("anteater"),)))
