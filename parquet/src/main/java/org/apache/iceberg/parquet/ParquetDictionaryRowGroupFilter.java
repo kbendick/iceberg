@@ -377,7 +377,6 @@ public class ParquetDictionaryRowGroupFilter {
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
-      // TODO(kbendick) - Is this valid? I think this is saying that if there's no stats it might match.
       Boolean hasNonDictPage = isFallback.get(id);
       if (hasNonDictPage == null || hasNonDictPage) {
         return ROWS_MIGHT_MATCH;
