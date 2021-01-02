@@ -64,6 +64,10 @@ class Predicate(Expression):
             return "equal({})".format(self.ref)
         elif self.op == Operation.NOT_EQ:
             return "not_equal({})".format(self.ref)
+        # TODO(kbendick) - Shouldn't STARTS_WITH, as well as all Unary operators have the lit in __str__?
+        elif self.op == Operation.STARTS_WITH:
+            return "starts_with({})".format(self.ref)
+        #    return "starts_with({}, {})".format(self.ref, self.lit)
         else:
             return "invalid predicate: operation = {}".format(self.op)
 
