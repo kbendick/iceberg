@@ -23,9 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -82,6 +85,7 @@ import static org.apache.iceberg.Files.localOutput;
 import static org.apache.spark.sql.catalyst.util.DateTimeUtils.fromJavaTimestamp;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.column;
+import static org.apache.spark.sql.functions.exp;
 
 @RunWith(Parameterized.class)
 public class TestFilteredScan {
@@ -515,9 +519,6 @@ public class TestFilteredScan {
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new Not(new StringStartsWith("data", "junc")));
 
-    List<InputPartition<InternalRow>> plannedPartitions = reader.planInputPartitions();
-    plannedPartitions.isEmpty();
-
     Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 
@@ -535,6 +536,27 @@ public class TestFilteredScan {
 
     Assert.assertEquals(1, matchedData.size());
     Assert.assertEquals("junction", matchedData.get(0));
+  }
+
+  @Test
+  public void testUnpartitionedNotStartsWith() {
+    Dataset<Row> df = spark.read()
+            .format("iceberg")
+            .option(SparkReadOptions.VECTORIZATION_ENABLED, String.valueOf(vectorized))
+            .load(unpartitioned.toString());
+
+    List<String> matchedData = df.select("data")
+            .where("data NOT LIKE 'jun%'")
+            .as(Encoders.STRING())
+            .collectAsList();
+
+    df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
+
+    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
+            "brush", "trap", "element", "limited", "global", "goldfish");
+
+    Assert.assertEquals(9, matchedData.size());
+    Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
   }
 
   private static Record projectFlat(Schema projection, Record record) {

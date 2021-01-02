@@ -429,6 +429,7 @@ public class ParquetMetricsRowGroupFilter {
 
     @Override
     @SuppressWarnings("unchecked")
+    // TODO(kbendick) - Refactor to use the utility function.
     public <T> Boolean startsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
@@ -472,6 +473,46 @@ public class ParquetMetricsRowGroupFilter {
       return ROWS_MIGHT_MATCH;
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    // TODO(kbendick) - This functioon needs testing / revisiting.
+    public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
+      int id = ref.fieldId();
+
+      Long valueCount = valueCounts.get(id);
+      if (valueCount == null) {
+        // the column is not present and is all nulls
+        return ROWS_CANNOT_MATCH;
+      }
+
+      Statistics<Binary> colStats = (Statistics<Binary>) stats.get(id);
+      if (colStats != null && !colStats.isEmpty()) {
+        if (hasNonNullButNoMinMax(colStats, valueCount)) {
+          return ROWS_MIGHT_MATCH;
+        }
+
+        if (!colStats.hasNonNullValue()) {
+          return ROWS_CANNOT_MATCH;
+        }
+
+        ByteBuffer prefixAsBytes = lit.toByteBuffer();
+
+        Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+
+        Binary lower = colStats.genericGetMin();
+
+        // TODO(kbendick) - Is this lower != null check needed by this point in time?
+        if (lower != null && byteBufferStartsWithPrefix(lower.toByteBuffer(), prefixAsBytes, comparator)) {
+          Binary upper = colStats.genericGetMax();
+          if (byteBufferStartsWithPrefix(upper.toByteBuffer(), prefixAsBytes, comparator)) {
+            return ROWS_CANNOT_MATCH;
+          }
+        }
+      }
+
+      return ROWS_MIGHT_MATCH;
+    }
+
     @SuppressWarnings("unchecked")
     private <T> T min(Statistics<?> statistics, int id) {
       return (T) conversions.get(id).apply(statistics.genericGetMin());
@@ -501,5 +542,20 @@ public class ParquetMetricsRowGroupFilter {
   static boolean hasNonNullButNoMinMax(Statistics statistics, long valueCount) {
     return statistics.getNumNulls() < valueCount &&
         (statistics.getMaxBytes() == null || statistics.getMinBytes() == null);
+  }
+
+  // TODO(kbendick) - Document and possibly move to the BinaryUtil. Also consider refactoring startsWith to
+  //                  use this as well.
+  private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
+    if (bb == null || prefix == null) {
+      return false;  // nulls should not be included in the output of any starts with operation.
+    }
+    if (prefix.remaining() > bb.remaining()) {
+      return false;
+    }
+    int length = Math.min(prefix.remaining(), bb.remaining());
+    // truncate bb so that its length in bytes is not greater than the length of prefix
+    int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
+    return cmp == 0;
   }
 }
