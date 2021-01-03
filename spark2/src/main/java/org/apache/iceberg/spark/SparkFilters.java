@@ -141,6 +141,9 @@ public class SparkFilters {
           Filter sparkChild = notFilter.child();
           // Special case to use the Iceberg NOT_STARTS_WITH operator for
           // Spark Not StringStartsWith
+          // TODO(kbendick) - Find a cleaner way to handle this. The current map
+          //                 of Spark Filters -> Iceberg Operations doesn't work
+          //                 super well here.
           if (sparkChild instanceof StringStartsWith) {
             StringStartsWith castedChild = (StringStartsWith) sparkChild;
             return notStartsWith(castedChild.attribute(), castedChild.value());

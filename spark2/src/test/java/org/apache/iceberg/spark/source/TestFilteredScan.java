@@ -26,9 +26,7 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -49,8 +47,6 @@ import org.apache.iceberg.spark.data.GenericsHelpers;
 import org.apache.iceberg.transforms.Transform;
 import org.apache.iceberg.transforms.Transforms;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.types.Types.StructType;
-import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
@@ -87,7 +83,6 @@ import static org.apache.iceberg.Files.localOutput;
 import static org.apache.spark.sql.catalyst.util.DateTimeUtils.fromJavaTimestamp;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.column;
-import static org.apache.spark.sql.functions.exp;
 
 @RunWith(Parameterized.class)
 public class TestFilteredScan {
@@ -525,13 +520,16 @@ public class TestFilteredScan {
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new Not(new StringStartsWith("data", "junc")));
 
-    org.apache.spark.sql.types.StructType schema = reader.readSchema();
-    List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
-    int len = inputPartitions.size();
+    // TODO(kbendick) - Delete me after fixing this test.
+    //
+    //  org.apache.spark.sql.types.StructType schema = reader.readSchema();
+    //  List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
+    //  int len = inputPartitions.size();
 
-    // TODO - I'd like this to be 9, but it keeps coming up as 10. Since spark does not natively support NOT STARTS WITH,
-    //       It might be the case tha we have to scan each input partition, even if it will evaluate to empty.
-    Assert.assertEquals(10, reader.planInputPartitions().size());
+    // TODO - I'd like this to be 9, but it keeps coming up as 10. Since spark does not natively support
+    //        NOT STARTS WITH, It might be the case tha we have to scan each input partition,
+    //        even if it will evaluate to empty.
+    Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 
   @Test
