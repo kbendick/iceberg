@@ -427,6 +427,9 @@ public class TestInclusiveManifestEvaluator {
     shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "a"), SPEC, false).eval(FILE);
     Assert.assertFalse("Should not read: all column values start with \"a\"", shouldRead);
 
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "aa"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches due to length", shouldRead);
+
     shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "A"), SPEC, true).eval(FILE);
     Assert.assertTrue("Should read: range matches when case sensitive", shouldRead);
   }

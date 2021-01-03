@@ -49,6 +49,7 @@ import static org.apache.iceberg.expressions.Expressions.notEqual;
 import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 import static org.apache.iceberg.types.Conversions.toByteBuffer;
@@ -527,6 +528,51 @@ public class TestInclusiveMetricsEvaluator {
     String aboveMax = UnicodeUtil.truncateStringMax(Literal.of("イロハニホヘト"), 4).value().toString();
     shouldRead = new InclusiveMetricsEvaluator(SCHEMA, startsWith("required", aboveMax), true).eval(FILE_4);
     Assert.assertFalse("Should not read: range doesn't match", shouldRead);
+  }
+
+  @Test
+  // TODO(kbendick) - Update these tests. It's just a copy paste of the startsWith tests at the moment.
+  public void testStringNotStartsWith() {
+    boolean shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "a"), true).eval(FILE);
+    Assert.assertTrue("Should read: no stats", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "a"), true).eval(FILE_2);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "aa"), true).eval(FILE_2);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "aaa"), true).eval(FILE_2);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "1s"), true).eval(FILE_3);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "1str1x"), true).eval(FILE_3);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "ff"), true).eval(FILE_4);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "aB"), true).eval(FILE_2);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "dWX"), true).eval(FILE_2);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "5"), true).eval(FILE_3);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "3str3x"), true).eval(FILE_3);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    String aboveMax = UnicodeUtil.truncateStringMax(Literal.of("イロハニホヘト"), 4).value().toString();
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", aboveMax), true).eval(FILE_4);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    // TODO(kbendick) - When pick up - move additional file test that has equivalent up and down bounds
+    //                  into this test suite. Also add files that vary in the different sets of stats offered
+    //                  to ensure all cases are considered.
   }
 
   @Test
