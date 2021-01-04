@@ -173,6 +173,9 @@ public class ManifestReader<F extends ContentFile<F>>
 
       // ensure stats columns are present for metrics evaluation
       boolean requireStatsProjection = requireStatsProjection(rowFilter, columns);
+      // TODO(kbendick) - Even if the columns are available, it is determined
+      //                  based on the configuration. So the table needs to have the
+      //                  config there (even if stats were passed in). The above not evaluating to true bc columns are null is the problem
       Collection<String> projectColumns = requireStatsProjection ? withStatsColumns(columns) : columns;
 
       return CloseableIterable.filter(
@@ -272,6 +275,7 @@ public class ManifestReader<F extends ContentFile<F>>
     return lazyMetricsEvaluator;
   }
 
+  // TODO(kbendick) - How are columns null here?
   private static boolean requireStatsProjection(Expression rowFilter, Collection<String> columns) {
     // Make sure we have all stats columns for metrics evaluator
     return rowFilter != Expressions.alwaysTrue() &&

@@ -56,7 +56,9 @@ public class InclusiveMetricsEvaluator {
 
   public InclusiveMetricsEvaluator(Schema schema, Expression unbound, boolean caseSensitive) {
     StructType struct = schema.asStruct();
-    this.expr = Binder.bind(struct, rewriteNot(unbound), caseSensitive);
+    // TODO(kbendick) - In line this again.
+    Expression rewriteNotExpression = rewriteNot(unbound);
+    this.expr = Binder.bind(struct, rewriteNotExpression, caseSensitive);
   }
 
   /**

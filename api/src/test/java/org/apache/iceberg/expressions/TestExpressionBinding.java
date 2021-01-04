@@ -38,13 +38,15 @@ import static org.apache.iceberg.expressions.Expressions.not;
 import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
+import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
 public class TestExpressionBinding {
   private static final StructType STRUCT = StructType.of(
       required(0, "x", Types.IntegerType.get()),
       required(1, "y", Types.IntegerType.get()),
-      required(2, "z", Types.IntegerType.get())
+      required(2, "z", Types.IntegerType.get()),
+      optional(3, "data", Types.StringType.get())
   );
 
   @Test
@@ -189,6 +191,10 @@ public class TestExpressionBinding {
     Expression bound = Binder.bind(STRUCT, not(not(lessThan("y", 100))));
     BoundPredicate<?> pred = TestHelpers.assertAndUnwrap(bound);
     Assert.assertEquals("Should have the correct bound field", 1, pred.term().ref().fieldId());
+
+    Assert.assertEquals("Should simplify true and not(pred) to not(pred)",
+            Binder.bind(STRUCT, not(startsWith("data", "abc"))),
+            Binder.bind(STRUCT, and(alwaysTrue(), not(startsWith("data", "abc")))));
   }
 
   @Test

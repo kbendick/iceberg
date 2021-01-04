@@ -431,7 +431,7 @@ public class TestInclusiveManifestEvaluator {
     Assert.assertTrue("Should read: range matches due to length", shouldRead);
 
     shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "A"), SPEC, true).eval(FILE);
-    Assert.assertTrue("Should read: range matches when case sensitive", shouldRead);
+    Assert.assertTrue("Should read: range matches", shouldRead);
   }
 
   @Test

@@ -149,8 +149,6 @@ public class UnboundPredicate<T> extends Predicate<T, UnboundTerm<T>> implements
     return Type.TypeID.DOUBLE.equals(typeID) || Type.TypeID.FLOAT.equals(typeID);
   }
 
-  // TODO(kbendick) - Does not carry caseSensitive information to
-  //                  the startsWith / notStartsWith filters
   private Expression bindLiteralOperation(BoundTerm<T> boundTerm) {
     Literal<T> lit = literal().to(boundTerm.type());
     if (lit == null) {

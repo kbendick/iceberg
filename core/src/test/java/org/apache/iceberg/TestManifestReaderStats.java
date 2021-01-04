@@ -44,13 +44,21 @@ public class TestManifestReaderStats extends TableTestBase {
     super(formatVersion);
   }
 
-  private static final Map<Integer, Long> VALUE_COUNT = ImmutableMap.of(3, 3L);
-  private static final Map<Integer, Long> NULL_VALUE_COUNTS = ImmutableMap.of(3, 0L);
+  // TODO(kbendick) - Remove stats for col(ref=data, id=4) if not used.
+  // For the integer column $"id", id=3, and for the string column $"data", id=4
+  private static final Map<Integer, Long> VALUE_COUNT = ImmutableMap.of(
+          3, 3L,
+          4, 3L);
+  private static final Map<Integer, Long> NULL_VALUE_COUNTS = ImmutableMap.of(
+          3, 0L,
+          4, 0L);
   private static final Map<Integer, Long> NAN_VALUE_COUNTS = ImmutableMap.of(3, 1L);
   private static final Map<Integer, ByteBuffer> LOWER_BOUNDS =
-      ImmutableMap.of(3, Conversions.toByteBuffer(Types.IntegerType.get(), 2));
+      ImmutableMap.of(3, Conversions.toByteBuffer(Types.IntegerType.get(), 2),
+              4, Conversions.toByteBuffer(Types.StringType.get(), "Z"));
   private static final Map<Integer, ByteBuffer> UPPER_BOUNDS =
-      ImmutableMap.of(3, Conversions.toByteBuffer(Types.IntegerType.get(), 4));
+      ImmutableMap.of(3, Conversions.toByteBuffer(Types.IntegerType.get(), 4),
+              4, Conversions.toByteBuffer(Types.StringType.get(), "Z"));
 
   private static final Metrics METRICS = new Metrics(3L, null,
       VALUE_COUNT, NULL_VALUE_COUNTS, NAN_VALUE_COUNTS, LOWER_BOUNDS, UPPER_BOUNDS);
@@ -82,6 +90,16 @@ public class TestManifestReaderStats extends TableTestBase {
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());
     }
+    // TODO(kbendick) - Either figure out how to add the column stats as a table option
+    //                  or remove this (they seem to be getting picked up anyway, but not
+    //                  sure if they're being used).
+    try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
+            .filterRows(Expressions.notStartsWith("data", "Z"))) {
+      System.out.println("Processing reader in full stats ManifestReader with notStartsWith");
+      CloseableIterable<ManifestEntry<DataFile>> entries = reader.entries();
+      ManifestEntry<DataFile> entry = entries.iterator().next();
+      assertFullStats(entry.file());
+    }
   }
 
   @Test
@@ -89,7 +107,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count"))
-        .filterRows(Expressions.equal("id", 3))) {
+        .filterRows(Expressions.notStartsWith("data", "Z"))) {
       CloseableIterable<ManifestEntry<DataFile>> entries = reader.entries();
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());
@@ -101,7 +119,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count"))
-        .filterRows(Expressions.equal("id", 3))) {
+        .filterRows(Expressions.notStartsWith("data", "Z"))) {
       DataFile entry = reader.iterator().next();
       assertStatsDropped(entry);
     }
@@ -111,7 +129,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count", "value_counts"))
-        .filterRows(Expressions.equal("id", 3))) {
+        .filterRows(Expressions.equal("id", 0))) {
       DataFile entry = reader.iterator().next();
       assertFullStats(entry);
     }

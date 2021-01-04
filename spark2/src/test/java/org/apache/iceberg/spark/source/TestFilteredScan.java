@@ -83,6 +83,7 @@ import static org.apache.iceberg.Files.localOutput;
 import static org.apache.spark.sql.catalyst.util.DateTimeUtils.fromJavaTimestamp;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.column;
+import static org.apache.spark.sql.functions.not;
 
 @RunWith(Parameterized.class)
 public class TestFilteredScan {
@@ -500,6 +501,7 @@ public class TestFilteredScan {
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new StringStartsWith("data", "junc"));
 
+    // TODO(kbendick) - Delete me after testing and finalizing.
     org.apache.spark.sql.types.StructType schema = reader.readSchema();
     List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
     int len = inputPartitions.size();
@@ -544,7 +546,7 @@ public class TestFilteredScan {
         .as(Encoders.STRING())
         .collectAsList();
 
-    Assert.assertEquals(1, matchedData.size());
+    Assert.assertEquals(9, matchedData.size());
     Assert.assertEquals("junction", matchedData.get(0));
   }
 
@@ -560,12 +562,20 @@ public class TestFilteredScan {
             .as(Encoders.STRING())
             .collectAsList();
 
+    List<String> matchedDataNoSql = df
+            .select("data")
+            .where(not(column("data").startsWith("jun")))
+            .as(Encoders.STRING())
+            .collectAsList();
+
+    df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
+
     df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
 
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
 
-    Assert.assertEquals(9, matchedData.size());
+    Assert.assertEquals(1, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
   }
 

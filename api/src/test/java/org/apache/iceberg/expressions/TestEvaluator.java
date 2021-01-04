@@ -48,6 +48,7 @@ import static org.apache.iceberg.expressions.Expressions.notEqual;
 import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.predicate;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
@@ -228,16 +229,20 @@ public class TestEvaluator {
     Function<String, TestHelpers.Row> rowWithStr =
             (String val) -> TestHelpers.Row.of(val);
     Evaluator evaluator = new Evaluator(struct, startsWith("s", "abc"));
-    Assert.assertTrue("abc.startsWith(\"abc\") => true", evaluator.eval(rowWithStr.apply("abc")));
-    Assert.assertFalse("abc.startsWith(\"Abc\") => false", evaluator.eval(rowWithStr.apply("Abc")));
-    Assert.assertFalse("a.startsWith(\"abc\") => false", evaluator.eval(rowWithStr.apply("a")));
+    Assert.assertTrue("abc startsWith abc => true", evaluator.eval(rowWithStr.apply("abc")));
+    Assert.assertFalse("abc startsWith Abc => false", evaluator.eval(rowWithStr.apply("Abc")));
+    Assert.assertFalse("a startsWith abc => false", evaluator.eval(rowWithStr.apply("a")));
+  }
 
-    // TODO(kbendick) - Make a separate issue for the fact that caseSensitive is not respected for startsWith.
-    Evaluator caseInsensitive = new Evaluator(struct, startsWith("s", "abc"), false);
-    Assert.assertTrue("abc.startsWith(\"abc\") => true if caseSensitive is false",
-            caseInsensitive.eval(rowWithStr.apply("abc")));
-    Assert.assertTrue("abc.startsWith(\"Abc\") => true if caseSensitive is false",
-            caseInsensitive.eval(rowWithStr.apply("Abc")));
+  @Test
+  public void testSNotStartsWith() {
+    StructType struct = StructType.of(required(24, "s",Types.StringType.get()));
+    Function<String, TestHelpers.Row> rowWithStr =
+            (String val) -> TestHelpers.Row.of(val);
+    Evaluator evaluator = new Evaluator(struct, notStartsWith("s", "abc"));
+    Assert.assertFalse("abc notStartsWith abc => false", evaluator.eval(rowWithStr.apply("abc")));
+    Assert.assertTrue("abc notStartsWith Abc => false", evaluator.eval(rowWithStr.apply("Abc")));
+    Assert.assertTrue("a notStartsWith abc => false", evaluator.eval(rowWithStr.apply("a")));
   }
 
   @Test

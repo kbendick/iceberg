@@ -336,7 +336,7 @@ public class ManifestEvaluator {
       PartitionFieldSummary fieldStats = stats.get(pos);
 
       // values are all null (and stats exist) and literal cannot contain null
-      if (fieldStats.containsNull() && fieldStats.lowerBound() == null) {
+      if (fieldStats.lowerBound() == null) {
         return ROWS_CANNOT_MATCH;
       }
 
@@ -368,5 +368,11 @@ public class ManifestEvaluator {
       int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
       return cmp == 0;
     }
+
+//    private boolean containsNullsOnly(Integer id) {
+//      return valueCounts != null && valueCounts.containsKey(id) &&
+//              nullCounts != null && nullCounts.containsKey(id) &&
+//              valueCounts.get(id) - nullCounts.get(id) == 0;
+//    }
   }
 }

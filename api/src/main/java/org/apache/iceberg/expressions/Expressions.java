@@ -66,7 +66,8 @@ public class Expressions {
   }
 
   // TODO(kbendick) - Might need to add a special case here for child instanceof StartsWith
-  //                  to return the notStartsWith implementation.
+  //                  to return the notStartsWith implementation?
+  //                  Removing it with RewriteNot fixed a different test.
   public static Expression not(Expression child) {
     Preconditions.checkNotNull(child, "Child expression cannot be null.");
     if (child == alwaysTrue()) {

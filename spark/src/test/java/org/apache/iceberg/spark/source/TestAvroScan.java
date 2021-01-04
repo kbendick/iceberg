@@ -105,6 +105,9 @@ public abstract class TestAvroScan extends AvroDataTest {
         .format("iceberg")
         .load(location.toString());
 
+    // TODO(kbendick) - The table is built with all fields marked as required so this should
+    //                  fail with this filter - but I should be checking at the iceberg scan level.
+    // List<Row> rows = df.filter("data is null").collectAsList();
     List<Row> rows = df.collectAsList();
     Assert.assertEquals("Should contain 100 rows", 100, rows.size());
 

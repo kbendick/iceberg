@@ -85,6 +85,10 @@ public class TestMetricsSerialization {
     byteMap1.put(1, ByteBuffer.wrap(new byte[] {1, 2, 3}));
     byteMap1.put(2, ByteBuffer.wrap(new byte[] {1, 2, 3, 4}));
 
+    // TODO(kbendick) - When fixing deprecated instances of Metrics constructor,
+    //                  rename these to be the value they represent
+    //                  Additionally, should upperBounds (byteMap2) be empty like this?
+    //                  Does not seem to be the intended behavior.
     Map<Integer, ByteBuffer> byteMap2 = new HashMap<>();
     byteMap1.put(3, ByteBuffer.wrap(new byte[] {1, 2}));
 

@@ -67,6 +67,7 @@ public class TestDataFileSerialization {
       .identity("date")
       .build();
 
+  private static final Map<Integer, Long> COLUMN_SIZES = Maps.newHashMap();
   private static final Map<Integer, Long> VALUE_COUNTS = Maps.newHashMap();
   private static final Map<Integer, Long> NULL_VALUE_COUNTS = Maps.newHashMap();
   private static final Map<Integer, Long> NAN_VALUE_COUNTS = Maps.newHashMap();
@@ -90,7 +91,7 @@ public class TestDataFileSerialization {
       .withFileSizeInBytes(1234)
       .withPartitionPath("date=2018-06-08")
       .withMetrics(new Metrics(
-          5L, null, VALUE_COUNTS, NULL_VALUE_COUNTS, NAN_VALUE_COUNTS, LOWER_BOUNDS, UPPER_BOUNDS))
+          5L, COLUMN_SIZES, VALUE_COUNTS, NULL_VALUE_COUNTS, NAN_VALUE_COUNTS, LOWER_BOUNDS, UPPER_BOUNDS))
       .withSplitOffsets(ImmutableList.of(4L))
       .withEncryptionKeyMetadata(ByteBuffer.allocate(4).putInt(34))
       .build();
