@@ -67,6 +67,7 @@ public class BoundLiteralPredicate<T> extends BoundPredicate<T> {
         return cmp.compare(value, literal.value()) == 0;
       case NOT_EQ:
         return cmp.compare(value, literal.value()) != 0;
+      // TODO(kbendick) - Open separate issue. These don't handle case sensitive.
       case STARTS_WITH:
         return String.valueOf(value).startsWith((String) literal.value());
       case NOT_STARTS_WITH:

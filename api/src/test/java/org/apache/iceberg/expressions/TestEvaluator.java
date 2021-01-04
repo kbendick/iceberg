@@ -22,6 +22,7 @@ package org.apache.iceberg.expressions;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Function;
 import org.apache.avro.util.Utf8;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.TestHelpers;
@@ -49,6 +50,7 @@ import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.predicate;
+import static org.apache.iceberg.expressions.Expressions.startsWith;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
@@ -218,6 +220,24 @@ public class TestEvaluator {
                     TestHelpers.Row.of(
                         TestHelpers.Row.of(6)))))));
 
+  }
+
+  @Test
+  public void testStartsWith() {
+    StructType struct = StructType.of(required(24, "s",Types.StringType.get()));
+    Function<String, TestHelpers.Row> rowWithStr =
+            (String val) -> TestHelpers.Row.of(val);
+    Evaluator evaluator = new Evaluator(struct, startsWith("s", "abc"));
+    Assert.assertTrue("abc.startsWith(\"abc\") => true", evaluator.eval(rowWithStr.apply("abc")));
+    Assert.assertFalse("abc.startsWith(\"Abc\") => false", evaluator.eval(rowWithStr.apply("Abc")));
+    Assert.assertFalse("a.startsWith(\"abc\") => false", evaluator.eval(rowWithStr.apply("a")));
+
+    // TODO(kbendick) - Make a separate issue for the fact that caseSensitive is not respected for startsWith.
+    Evaluator caseInsensitive = new Evaluator(struct, startsWith("s", "abc"), false);
+    Assert.assertTrue("abc.startsWith(\"abc\") => true if caseSensitive is false",
+            caseInsensitive.eval(rowWithStr.apply("abc")));
+    Assert.assertTrue("abc.startsWith(\"Abc\") => true if caseSensitive is false",
+            caseInsensitive.eval(rowWithStr.apply("Abc")));
   }
 
   @Test
