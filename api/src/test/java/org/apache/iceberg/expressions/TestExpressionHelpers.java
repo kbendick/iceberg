@@ -127,7 +127,8 @@ public class TestExpressionHelpers {
         { and(notEqual("a", 5), notNull("a")), and(notEqual("a", 5), notNull("a")) },
         { or(equal("a", 5), isNull("a")), not(and(notEqual("a", 5), notNull("a"))) },
         { or(equal("a", 5), notNull("a")), or(equal("a", 5), not(isNull("a"))) },
-        { startsWith("s", "hello"), not(notStartsWith("s", "hello")) }
+        { startsWith("s", "hello"), not(notStartsWith("s", "hello")) },
+        { notStartsWith("s", "world"), not(startsWith("s", "world")) }
     };
 
     for (Expression[] pair : expressions) {

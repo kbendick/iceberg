@@ -75,9 +75,6 @@ public class Expressions {
       return alwaysTrue();
     } else if (child instanceof Not) {
       return ((Not) child).child();
-      // TODO(kbendick) - I don't think that using rewriteNot is correct here. Need to test.
-    } else if (child.op() == Operation.STARTS_WITH) {
-      return rewriteNot(child);
     }
     return new Not(child);
   }
