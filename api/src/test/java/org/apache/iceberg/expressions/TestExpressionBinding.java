@@ -149,14 +149,14 @@ public class TestExpressionBinding {
 
   @Test
   public void testNotStartsWith() {
-    StructType struct = StructType.of(required(0, "s", Types.StringType.get()));
+    StructType struct = StructType.of(required(21, "s", Types.StringType.get()));
     Expression expr = notStartsWith("s", "abc");
     Expression boundExpr = Binder.bind(struct, expr);
     TestHelpers.assertAllReferencesBound("NotStartsWith", boundExpr);
     // Make sure the expression is a NotStartsWith
     BoundPredicate<?> pred = TestHelpers.assertAndUnwrap(boundExpr, BoundPredicate.class);
     Assert.assertEquals("Should be right operation", Operation.NOT_STARTS_WITH, pred.op());
-    Assert.assertEquals("Should bind s correctly", 0, pred.term().ref().fieldId());
+    Assert.assertEquals("Should bind term to correct field id", 21, pred.term().ref().fieldId());
   }
 
   @Test

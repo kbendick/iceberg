@@ -77,6 +77,8 @@ public interface Expression extends Serializable {
           return Operation.IN;
         case STARTS_WITH:
           return Operation.NOT_STARTS_WITH;
+        case NOT_STARTS_WITH:
+          return Operation.STARTS_WITH;
         default:
           throw new IllegalArgumentException("No negation for operation: " + this);
       }

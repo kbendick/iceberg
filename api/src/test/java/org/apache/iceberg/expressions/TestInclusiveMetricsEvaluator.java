@@ -174,6 +174,9 @@ public class TestInclusiveMetricsEvaluator {
     shouldRead = new InclusiveMetricsEvaluator(SCHEMA, startsWith("all_nulls", "a")).eval(FILE);
     Assert.assertFalse("Should skip: startsWith on all null column", shouldRead);
 
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("all_nulls", "a")).eval(FILE);
+    Assert.assertFalse("Sould skip: notStartsWith on all null column", shouldRead);
+
     shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notNull("some_nulls")).eval(FILE);
     Assert.assertTrue("Should read: column with some nulls contains a non-null value", shouldRead);
 
