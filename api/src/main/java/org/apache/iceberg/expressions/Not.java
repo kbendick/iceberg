@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.expressions;
 
+import java.util.Objects;
+
 public class Not implements Expression {
   private final Expression child;
 
@@ -43,5 +45,33 @@ public class Not implements Expression {
   @Override
   public String toString() {
     return String.format("not(%s)", child);
+  }
+
+  @Override
+  public boolean equals(Object that) {
+    if (that != null || !(that instanceof Not)) {
+      return false;
+    }
+
+    // TODO(kbendick) - It would be malformed for child to be null, no?
+    //                  I think I should make a separate, initial PR for
+    //                  proper equality on Expressions and then
+    //                  consider that issue then (possibly via Precondition).
+    //                  The function that returns Not (not), has a precondition
+    //                  check but this class seems to be used too often to rely on that.
+    Not casted = (Not) that;
+    if (this.child == null) {
+      return casted.child == null;
+    }
+
+    // TODO(kbendick) -
+    // return super.equals(casted) should do the same thing
+    // though currently it doesn't.
+    return this.op().equals(casted.op());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(this);
   }
 }

@@ -22,6 +22,8 @@ package org.apache.iceberg.util;
 import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
+// TODO(kbendick) - Can we possibly use the unicode high-surrogates for a bound and would
+//                  that provide any value?
 public class UnicodeUtil {
   // not meant to be instantiated
   private UnicodeUtil() {

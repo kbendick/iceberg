@@ -22,10 +22,10 @@ package org.apache.iceberg.expressions;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.function.Function;
 import org.apache.avro.util.Utf8;
 import org.apache.iceberg.AssertHelpers;
 import org.apache.iceberg.TestHelpers;
+import org.apache.iceberg.TestHelpers.Row;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
@@ -225,24 +225,20 @@ public class TestEvaluator {
 
   @Test
   public void testStartsWith() {
-    StructType struct = StructType.of(required(24, "s",Types.StringType.get()));
-    Function<String, TestHelpers.Row> rowWithStr =
-            (String val) -> TestHelpers.Row.of(val);
+    StructType struct = StructType.of(required(24, "s", Types.StringType.get()));
     Evaluator evaluator = new Evaluator(struct, startsWith("s", "abc"));
-    Assert.assertTrue("abc startsWith abc => true", evaluator.eval(rowWithStr.apply("abc")));
-    Assert.assertFalse("abc startsWith Abc => false", evaluator.eval(rowWithStr.apply("Abc")));
-    Assert.assertFalse("a startsWith abc => false", evaluator.eval(rowWithStr.apply("a")));
+    Assert.assertTrue("abc startsWith abc => true", evaluator.eval(Row.of("abc")));
+    Assert.assertFalse("abc startsWith Abc => false", evaluator.eval(Row.of("Abc")));
+    Assert.assertFalse("a startsWith abc => false", evaluator.eval(Row.of("a")));
   }
 
   @Test
-  public void testSNotStartsWith() {
-    StructType struct = StructType.of(required(24, "s",Types.StringType.get()));
-    Function<String, TestHelpers.Row> rowWithStr =
-            (String val) -> TestHelpers.Row.of(val);
+  public void testNotStartsWith() {
+    StructType struct = StructType.of(required(24, "s", Types.StringType.get()));
     Evaluator evaluator = new Evaluator(struct, notStartsWith("s", "abc"));
-    Assert.assertFalse("abc notStartsWith abc => false", evaluator.eval(rowWithStr.apply("abc")));
-    Assert.assertTrue("abc notStartsWith Abc => false", evaluator.eval(rowWithStr.apply("Abc")));
-    Assert.assertTrue("a notStartsWith abc => false", evaluator.eval(rowWithStr.apply("a")));
+    Assert.assertFalse("abc notStartsWith abc => false", evaluator.eval(Row.of("abc")));
+    Assert.assertTrue("abc notStartsWith Abc => false", evaluator.eval(Row.of("Abc")));
+    Assert.assertTrue("a notStartsWith abc => false", evaluator.eval(Row.of("a")));
   }
 
   @Test

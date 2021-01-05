@@ -231,6 +231,7 @@ public class Projections {
     }
   }
 
+  // TODO(kbendick) - This one might need some handling for NOT_STARTS_WITH.
   private static class StrictProjection extends BaseProjectionEvaluator {
     private StrictProjection(PartitionSpec spec, boolean caseSensitive) {
       super(spec, caseSensitive);

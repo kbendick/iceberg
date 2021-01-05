@@ -406,7 +406,7 @@ public class StrictMetricsEvaluator {
     // TODO(kbendick) - Can we do better?
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       // TODO(kbendick) - Leaving this not compiling so I know where to pick back up.
-      if (containsNullsOnly());
+      // if (containsNullsOnly());
       return ROWS_MIGHT_NOT_MATCH;
     }
 

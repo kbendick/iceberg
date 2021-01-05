@@ -33,6 +33,7 @@ import org.apache.iceberg.types.Type;
  * @param <S> Java class of source values
  * @param <T> Java class of transformed values
  */
+// TODO(kbendick) - I think this also needs equals defined on it
 public interface Transform<S, T> extends Serializable {
   /**
    * Transforms a value to its corresponding partition value.

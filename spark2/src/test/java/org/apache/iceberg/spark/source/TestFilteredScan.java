@@ -73,6 +73,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -509,8 +510,11 @@ public class TestFilteredScan {
     Assert.assertEquals(1, reader.planInputPartitions().size());
   }
 
+//  @Ignore
   @Test
-  // TODO(kbendick) - Needs the residual not starts with evaluator.
+  // TODO(kbendick) - This is reading in 9 partitions. It should be getting
+  //                  bounds based on the data file that it can use (like the
+  //                  starts with one above. So we need to check that.
   public void testPartitionedByIdNotStartsWith() {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
@@ -528,9 +532,9 @@ public class TestFilteredScan {
     //  List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
     //  int len = inputPartitions.size();
 
-    // TODO - I'd like this to be 9, but it keeps coming up as 10. Since spark does not natively support
-    //        NOT STARTS WITH, It might be the case tha we have to scan each input partition,
-    //        even if it will evaluate to empty.
+    // TODO - I'd like this to be 9, but it keeps coming up as 10. Even though spark does not natively support
+    //        NOT STARTS WITH, we _shouuld_ be still able to push down this predicate due to
+    //        the manifest file having the lower bound in order to remove that partition.
     Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 

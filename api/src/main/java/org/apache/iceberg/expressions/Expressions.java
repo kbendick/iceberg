@@ -77,6 +77,10 @@ public class Expressions {
     } else if (child instanceof Not) {
       return ((Not) child).child();
     }
+//    TODO(kbendick) - Adding this previously broke some tests.
+//    } else if (child.op() == Expression.Operation.STARTS_WITH) {
+//      return child.negate();
+//    }
     return new Not(child);
   }
 

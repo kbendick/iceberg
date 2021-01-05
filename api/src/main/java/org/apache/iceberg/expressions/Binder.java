@@ -19,10 +19,8 @@
 
 package org.apache.iceberg.expressions;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.exceptions.ValidationException;
 import org.apache.iceberg.expressions.ExpressionVisitors.ExpressionVisitor;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableSet;

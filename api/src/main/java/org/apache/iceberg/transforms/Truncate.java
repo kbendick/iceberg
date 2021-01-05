@@ -27,6 +27,7 @@ import org.apache.iceberg.expressions.BoundPredicate;
 import org.apache.iceberg.expressions.BoundTransform;
 import org.apache.iceberg.expressions.BoundUnaryPredicate;
 import org.apache.iceberg.expressions.Expression;
+import org.apache.iceberg.expressions.Expression.Operation;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.relocated.com.google.common.base.Objects;
@@ -303,13 +304,34 @@ abstract class Truncate<T> implements Transform<T, T> {
         return Expressions.predicate(predicate.op(), name);
       } else if (predicate instanceof BoundLiteralPredicate) {
         BoundLiteralPredicate<CharSequence> pred = predicate.asLiteralPredicate();
-        if (pred.op() == Expression.Operation.STARTS_WITH) {
+        // TODO(kbendick) - Likely NOT_STARTS_WITH needs to be handled here.
+        // TODO(kbendick) - Either come up with a name for these StringStartsWith like predicates
+        //                  and match against those or just form a collection and match against in.
+        //                  instead of a bunch of ifs.
+        if (pred.op() == Expression.Operation.STARTS_WITH || pred.op() == Operation.NOT_STARTS_WITH) {
           if (pred.literal().value().length() < width()) {
             return Expressions.predicate(pred.op(), name, pred.literal().value());
           } else if (pred.literal().value().length() == width()) {
-            return Expressions.equal(name, pred.literal().value());
+            // TODO(kbendick) - Especially clean up this nastiness.
+            // TODO(kbendick) / TODISCUSS(kbendick) - Can we say notEquals for NOT_STARTS_WITH given that this is a
+            //                                        strict projection?
+            if (pred.op() == Expression.Operation.STARTS_WITH) {
+              return Expressions.equal(name, pred.literal().value());
+            } else {
+              return Expressions.notEqual(name, pred.literal().value());
+            }
+//            } else {
+//              // Can we substitute notEqual in here? No.
+//              // Consider the case of noteStartsWith(abcd, truncate(a, 2)).
+//              // ab is not equal to a (would return true), but ab notStartsWith a
+//              // is false (as ab startsWith a).
+//              return Expressions.equal(name, pred.literal().value());
+//            }
+          } else {
+            return ProjectionUtil.truncateArrayStrict(name, pred, this);
           }
         } else {
+          // TODO(kbendick) - Also verify this code path is happy and tested for notStartsWith.
           return ProjectionUtil.truncateArrayStrict(name, pred, this);
         }
       } else if (predicate.isSetPredicate() && predicate.op() == Expression.Operation.NOT_IN) {
