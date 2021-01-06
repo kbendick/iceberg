@@ -73,7 +73,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -84,7 +83,6 @@ import static org.apache.iceberg.Files.localOutput;
 import static org.apache.spark.sql.catalyst.util.DateTimeUtils.fromJavaTimestamp;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.column;
-import static org.apache.spark.sql.functions.not;
 
 @RunWith(Parameterized.class)
 public class TestFilteredScan {
@@ -571,9 +569,8 @@ public class TestFilteredScan {
             .as(Encoders.STRING())
             .collectAsList();
 
-    //df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
-
-    //df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
+    // df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
+    // df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
 
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
