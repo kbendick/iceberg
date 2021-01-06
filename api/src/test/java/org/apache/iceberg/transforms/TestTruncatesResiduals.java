@@ -232,7 +232,8 @@ public class TestTruncatesResiduals {
     PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("value", 2).build();
 
     assertResidualValue(spec, notStartsWith("value", "bc"), "bc", Expression.Operation.FALSE);
-    assertResidualPredicate(spec, notStartsWith("value", "bc"), "bc");
+    assertResidualPredicate(spec, notStartsWith("value", "bcd"), "ab");
+    assertResidualValue(spec, notStartsWith("value", "bc"), "ab", Expression.Operation.TRUE);
   }
 
 //  @Ignore

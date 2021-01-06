@@ -83,6 +83,7 @@ import static org.apache.iceberg.Files.localOutput;
 import static org.apache.spark.sql.catalyst.util.DateTimeUtils.fromJavaTimestamp;
 import static org.apache.spark.sql.functions.callUDF;
 import static org.apache.spark.sql.functions.column;
+import static org.apache.spark.sql.functions.not;
 
 @RunWith(Parameterized.class)
 public class TestFilteredScan {
@@ -533,6 +534,8 @@ public class TestFilteredScan {
     // TODO - I'd like this to be 9, but it keeps coming up as 10. Even though spark does not natively support
     //        NOT STARTS WITH, we _shouuld_ be still able to push down this predicate due to
     //        the manifest file having the lower bound in order to remove that partition.
+    //        OF note, it comes up as 9 in the spark3 tests. Possibly because we don't have the injections
+    //        this can't work?
     Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 
@@ -548,7 +551,7 @@ public class TestFilteredScan {
         .as(Encoders.STRING())
         .collectAsList();
 
-    Assert.assertEquals(9, matchedData.size());
+    Assert.assertEquals(1, matchedData.size());
     Assert.assertEquals("junction", matchedData.get(0));
   }
 
@@ -575,10 +578,29 @@ public class TestFilteredScan {
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
 
-    matchedData.stream().forEach(match -> System.out.printf("Match element - %s\n", match));
-    System.out.printf(matchedData.get(0));
+    Assert.assertEquals(9, matchedData.size());
+    Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
+  }
 
-    Assert.assertEquals(1, matchedData.size());
+  @Test
+  public void testUnpartitionedNotStartsWithUsingSparkFilterFunctions() {
+    Dataset<Row> df = spark.read()
+            .format("iceberg")
+            .option(SparkReadOptions.VECTORIZATION_ENABLED, String.valueOf(vectorized))
+            .load(unpartitioned.toString());
+
+    List<String> matchedData = df.select("data")
+            .filter(not(column("data").startsWith("jun")))
+            .as(Encoders.STRING())
+            .collectAsList();
+
+    // df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
+    // df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
+
+    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
+            "brush", "trap", "element", "limited", "global", "goldfish");
+
+    Assert.assertEquals(9, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
   }
 

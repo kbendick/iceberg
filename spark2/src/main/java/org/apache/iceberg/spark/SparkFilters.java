@@ -56,7 +56,7 @@ import static org.apache.iceberg.expressions.Expressions.lessThan;
 import static org.apache.iceberg.expressions.Expressions.lessThanOrEqual;
 import static org.apache.iceberg.expressions.Expressions.not;
 import static org.apache.iceberg.expressions.Expressions.notNull;
-//import static org.apache.iceberg.expressions.Expressions.notStartsWith;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 
@@ -144,10 +144,10 @@ public class SparkFilters {
           // TODO(kbendick) - Find a cleaner way to handle this. The current map
           //                 of Spark Filters -> Iceberg Operations doesn't work
           //                 super well here.
-//          if (sparkChild instanceof StringStartsWith) {
-//            StringStartsWith castedChild = (StringStartsWith) sparkChild;
-//            return notStartsWith(castedChild.attribute(), castedChild.value());
-//          }
+          if (sparkChild instanceof StringStartsWith) {
+            StringStartsWith castedChild = (StringStartsWith) sparkChild;
+            return notStartsWith(castedChild.attribute(), castedChild.value());
+          }
           Expression child = convert(notFilter.child());
           if (child != null) {
             return not(child);
