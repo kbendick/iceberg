@@ -21,6 +21,7 @@ package org.apache.iceberg.expressions;
 
 import java.util.Set;
 import org.apache.iceberg.exceptions.ValidationException;
+import org.apache.iceberg.expressions.Expression.Operation;
 
 /**
  * Utils for traversing {@link Expression expressions}.
@@ -366,8 +367,12 @@ public class ExpressionVisitors {
           return visitor.alwaysTrue();
         case FALSE:
           return visitor.alwaysFalse();
-        case NOT:
+        case NOT: /* Special case for Not(StartsWith) to be => NOT_STARTS_WITH */
+          // TODO(kbendick) - Added this on 01/05 after breaking things last night.
           Not not = (Not) expr;
+          if (not.child().op() == Operation.STARTS_WITH) {
+            return visitEvaluator(not.child().negate(), visitor);
+          }
           return visitor.not(visitEvaluator(not.child(), visitor));
         case AND:
           And and = (And) expr;

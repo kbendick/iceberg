@@ -23,12 +23,10 @@ import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
 import org.apache.iceberg.TestHelpers;
 import org.apache.iceberg.expressions.Expression;
-import org.apache.iceberg.expressions.Expression.Operation;
 import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.iceberg.TestHelpers.assertAndUnwrapUnbound;
@@ -211,7 +209,7 @@ public class TestTruncatesResiduals {
     // assertResidualValue
     // This one fails when I leave the predicate as notStartsWith("value", "bcd") [or presumably any value > width]
 //         UnboundPredicate<?> predicate = notStartsWith("value", "bc");
-        Assert.assertEquals(Expression.Operation.TRUE, residual.op());
+    Assert.assertEquals(Expression.Operation.TRUE, residual.op());
     // assertResidualValue(spec, notStartsWith("value", "bcd"), "ab", Expression.Operation.TRUE);
 
     // assertResidualPredicate

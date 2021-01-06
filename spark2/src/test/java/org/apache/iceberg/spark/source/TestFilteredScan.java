@@ -555,6 +555,11 @@ public class TestFilteredScan {
   }
 
   @Test
+  // TODO(kbendick) - Somewhere in the last two commits I reversed some stuff, probably
+  //                  related to residuels (possibly in truncateArray or truncateArrayString)
+  //                  which is now causing this to return the opposite of values. :(.
+  //
+  // Need to break this into multiple PRs.
   public void testUnpartitionedNotStartsWith() {
     Dataset<Row> df = spark.read()
             .format("iceberg")
@@ -566,18 +571,15 @@ public class TestFilteredScan {
             .as(Encoders.STRING())
             .collectAsList();
 
-    List<String> matchedDataNoSql = df
-            .select("data")
-            .where(not(column("data").startsWith("jun")))
-            .as(Encoders.STRING())
-            .collectAsList();
+    //df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
 
-    df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
-
-    df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
+    //df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
 
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
+
+    matchedData.stream().forEach(match -> System.out.printf("Match element - %s\n", match));
+    System.out.printf(matchedData.get(0));
 
     Assert.assertEquals(1, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
