@@ -47,7 +47,8 @@ import static org.apache.iceberg.expressions.Expressions.rewriteNot;
  */
 public class InclusiveMetricsEvaluator {
   private static final int IN_PREDICATE_LIMIT = 200;
-
+  private static final boolean ROWS_MIGHT_MATCH = true;
+  private static final boolean ROWS_CANNOT_MATCH = false;
   private final Expression expr;
 
   public InclusiveMetricsEvaluator(Schema schema, Expression unbound) {
@@ -71,9 +72,6 @@ public class InclusiveMetricsEvaluator {
     // TODO: detect the case where a column is missing from the file using file's max field id.
     return new MetricsEvalVisitor().eval(file);
   }
-
-  private static final boolean ROWS_MIGHT_MATCH = true;
-  private static final boolean ROWS_CANNOT_MATCH = false;
 
   private class MetricsEvalVisitor extends BoundExpressionVisitor<Boolean> {
     private Map<Integer, Long> valueCounts = null;
@@ -402,18 +400,18 @@ public class InclusiveMetricsEvaluator {
         }
       }
 
-        return ROWS_MIGHT_MATCH;
-      }
+      return ROWS_MIGHT_MATCH;
+    }
 
     private boolean containsNullsOnly(Integer id) {
       return valueCounts != null && valueCounts.containsKey(id) &&
-          nullCounts != null && nullCounts.containsKey(id) &&
-          valueCounts.get(id) - nullCounts.get(id) == 0;
+              nullCounts != null && nullCounts.containsKey(id) &&
+              valueCounts.get(id) - nullCounts.get(id) == 0;
     }
 
     private boolean containsNaNsOnly(Integer id) {
       return nanCounts != null && nanCounts.containsKey(id) &&
-          valueCounts != null && nanCounts.get(id).equals(valueCounts.get(id));
+              valueCounts != null && nanCounts.get(id).equals(valueCounts.get(id));
     }
   }
 }

@@ -70,14 +70,12 @@ public class Expressions {
   //                  Removing it with RewriteNot fixed a different test.
   public static Expression not(Expression child) {
     Preconditions.checkNotNull(child, "Child expression cannot be null.");
-    // TODO(kbendick) - If we have alwaysTrue etc here, and it's been evaluated for
-    //                 startsWith, we can't just flip it.
     if (child == alwaysTrue()) {
       return alwaysFalse();
     } else if (child == alwaysFalse()) {
       return alwaysTrue();
     } else if (child instanceof Not) {
-      //    TODO(kbendick) - Adding this previously broke some tests.
+      //  TODO(kbendick) - Adding this previously broke some tests. Can I remove it?
       if (child.op() == Expression.Operation.STARTS_WITH) {
         return child.negate();
       }
