@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -492,13 +493,15 @@ public class TestFilteredScan {
             .option(SparkReadOptions.VECTORIZATION_ENABLED, String.valueOf(vectorized))
             .load(unpartitioned.toString());
 
-    List<String> matchedData = df.select("data")
-            .where("data NOT LIKE 'jun%'")
+    List<String> matchedData = df.where("data NOT LIKE 'jun%'")
+            .select("data")
             .as(Encoders.STRING())
             .collectAsList();
 
-    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
-            "brush", "trap", "element", "limited", "global", "goldfish");
+    List<String> expected = testRecords(SCHEMA).stream()
+            .map(r -> r.getField("data").toString())
+            .filter(d -> !d.startsWith("jun"))
+            .collect(Collectors.toList());
 
     Assert.assertEquals(9, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));

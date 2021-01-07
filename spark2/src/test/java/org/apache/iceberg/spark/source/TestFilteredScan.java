@@ -548,8 +548,10 @@ public class TestFilteredScan {
             .as(Encoders.STRING())
             .collectAsList();
 
-    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
-            "brush", "trap", "element", "limited", "global", "goldfish");
+    List<String> expected = testRecords(SCHEMA).stream()
+            .map(r -> r.getField("data").toString())
+            .filter(d -> !d.startsWith("jun"))
+            .collect(Collectors.toList());
 
     Assert.assertEquals(9, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
