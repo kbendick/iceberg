@@ -383,9 +383,8 @@ public class ParquetDictionaryRowGroupFilter {
       }
 
       Set<T> dictionary = dict(id, lit.comparator());
-      String litAsString = lit.value().toString();
       for (T item : dictionary) {
-        if (!item.toString().startsWith(litAsString)) {
+        if (!item.toString().startsWith(lit.value().toString())) {
           return ROWS_MIGHT_MATCH;
         }
       }

@@ -416,7 +416,7 @@ public class TableTestBase {
   protected static class Assertions {
     private final boolean enabled;
 
-    private Assertions(int validForVersion, int formatVersion) {
+    Assertions(int validForVersion, int formatVersion) {
       this.enabled = validForVersion == formatVersion;
     }
 

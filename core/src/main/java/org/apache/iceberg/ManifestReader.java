@@ -165,6 +165,11 @@ public class ManifestReader<F extends ContentFile<F>>
     return this;
   }
 
+  // TODO(kbendick) -
+  // When debugging, this generated `metricsEvaluator` of type InclusiveMetricsEvaluator
+  // with an expr of BoundLiteralPredicate (with field ref and literal and OP as expected).
+  // requireStatsProjection is still false though (even on working ones) - Need to run
+  // debugger the whole way through to be sure.
   CloseableIterable<ManifestEntry<F>> entries() {
     if ((rowFilter != null && rowFilter != Expressions.alwaysTrue()) ||
         (partFilter != null && partFilter != Expressions.alwaysTrue())) {

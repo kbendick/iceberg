@@ -518,8 +518,12 @@ public class TestFilteredScan {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
     DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
-            "path", location.toString())
+            "path", location.toString(),
+            "read.split.planning-lookback", "20")
     );
+
+//            This is a write config but lets see if it can help.
+//            "write.summary.partition-limit", "50")
 
     IcebergSource source = new IcebergSource();
     DataSourceReader reader = source.createReader(options);

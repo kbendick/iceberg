@@ -376,6 +376,10 @@ public class InclusiveMetricsEvaluator {
 
     @Override
     // TODO(kbendick) - This functioon needs testing / revisiting.
+    // TODO(kbendick) - This is the function that is causing issues with
+    //                  pruning partitions when it's not the partition column.
+    //                  I've updated it but I still need to figure out
+    //                  what I can say about length, if anything.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       Integer id = ref.fieldId();
 
@@ -383,27 +387,56 @@ public class InclusiveMetricsEvaluator {
         return ROWS_CANNOT_MATCH;
       }
 
-      // If min == max for at least the length of the lit to check, we can say does not match
-      // provided that the lit's length is <= the length of min and max
-      // (e.g. min = "z" and max = "z" and lit = "zz" should return ROWS_CANNOT_MATCH.
       ByteBuffer prefixAsBytes = lit.toByteBuffer();
 
       Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
-      if (lowerBounds != null && lowerBounds.containsKey(id) &&
-              upperBounds != null && upperBounds.containsKey(id)) {
+      if (lowerBounds != null && lowerBounds.containsKey(id)) {
         ByteBuffer lower = lowerBounds.get(id);
-        ByteBuffer upper = upperBounds.get(id);
-        // && prefixLength <= lowerLength && / && prefixLength <= upperLength are checked in
-        // byteBufferStartsWithPrefix
-        if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator) &&
-                byteBufferStartsWithPrefix(upper, prefixAsBytes, comparator)) {
-          return ROWS_CANNOT_MATCH;
+        // truncate lower bound so that its length in bytes is not greater than the length of prefix
+        int lengthLower = Math.min(prefixAsBytes.remaining(), lower.remaining());
+        int cmp1 = comparator.compare(BinaryUtil.truncateBinary(lower, lengthLower), prefixAsBytes);
+        if (cmp1 == 0) {
+          ByteBuffer upper = upperBounds.get(id);
+          // truncate upper bound so that its length in bytes is not greater than the length of prefix
+          int lengthUpper = Math.min(prefixAsBytes.remaining(), upper.remaining());
+          int cmp2 = comparator.compare(BinaryUtil.truncateBinary(upper, lengthUpper), prefixAsBytes);
+          if (cmp2 == 0) {
+            return ROWS_CANNOT_MATCH;
+          }
         }
       }
 
-      return ROWS_MIGHT_MATCH;
-    }
+        return ROWS_MIGHT_MATCH;
+      }
+//
+//      Integer id = ref.fieldId();
+//
+//      if (containsNullsOnly(id)) {
+//        return ROWS_CANNOT_MATCH;
+//      }
+//
+//      // If min == max for at least the length of the lit to check, we can say does not match
+//      // provided that the lit's length is <= the length of min and max
+//      // (e.g. min = "z" and max = "z" and lit = "zz" should return ROWS_CANNOT_MATCH.
+//      ByteBuffer prefixAsBytes = lit.toByteBuffer();
+//
+//      Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
+//
+//      if (lowerBounds != null && lowerBounds.containsKey(id) &&
+//              upperBounds != null && upperBounds.containsKey(id)) {
+//        ByteBuffer lower = lowerBounds.get(id);
+//        ByteBuffer upper = upperBounds.get(id);
+//        // && prefixLength <= lowerLength && / && prefixLength <= upperLength are checked in
+//        // byteBufferStartsWithPrefix
+//        if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator) &&
+//                byteBufferStartsWithPrefix(upper, prefixAsBytes, comparator)) {
+//          return ROWS_CANNOT_MATCH;
+//        }
+//      }
+//
+//      return ROWS_MIGHT_MATCH;
+//    }
 //        if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator))
 //        // truncate lower bound so that its length in bytes is not greater than the length of prefix
 //        // TODO - Need to also check length. E.g. lowerBound = "a", upperBound = "a", lit = "aa"
@@ -466,9 +499,9 @@ public class InclusiveMetricsEvaluator {
 
     // TODO(kbendick) - Make this a shared utility function, possibly in BinaryUtil?
     private boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
-      if (prefix.remaining() > bb.remaining()) {
-        return false;
-      }
+//      if (prefix.remaining() > bb.remaining()) {
+//        return false;
+//      }
       int length = Math.min(prefix.remaining(), bb.remaining());
       int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
       return cmp == 0;

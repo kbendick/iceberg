@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Set;
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.expressions.ExpressionVisitors.BoundVisitor;
+import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
 import org.apache.iceberg.util.NaNUtil;
 
@@ -154,7 +155,7 @@ public class Evaluator implements Serializable {
 
     @Override
     public <T> Boolean notStartsWith(Bound<T> valueExpr, Literal<T> lit) {
-      return !((String) valueExpr.eval(struct)).startsWith((String) lit.value());
+      return !((String) valueExpr.eval(struct)).startsWith((String) lit.to(Types.StringType.get()).value());
     }
   }
 }

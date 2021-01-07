@@ -62,6 +62,56 @@ public class TestDataTableScan extends TableTestBase {
         IllegalStateException.class, () -> table.newScan().project(SCHEMA.select("data")).select("id"));
   }
 
+//  @Test
+//  public void testTableScanWithMetrics() {
+//    // Partition spec bucketed on the non-
+//    // SCHEMA = new Schema(
+//    //        required(3, "id", Types.IntegerType.get()),
+//    //        required(4, "data", Types.StringType.get())
+//    // );
+//    final PartitionSpec SPEC = PartitionSpec.builderFor(SCHEMA)
+//            .bucket("id", 16)
+//            .build();
+//
+//    final Map<Integer, Long> COLUMN_SIZES = Maps.newHashMap();
+//    final Map<Integer, Long> VALUE_COUNTS = Maps.newHashMap();
+//    private static final Map<Integer, Long> NULL_VALUE_COUNTS = Maps.newHashMap();
+//    private static final Map<Integer, Long> NAN_VALUE_COUNTS = Maps.newHashMap();
+//    private static final Map<Integer, ByteBuffer> LOWER_BOUNDS = Maps.newHashMap();
+//    private static final Map<Integer, ByteBuffer> UPPER_BOUNDS = Maps.newHashMap();
+//
+//    static {
+//      VALUE_COUNTS.put(1, 5L);
+//      VALUE_COUNTS.put(2, 3L);
+//      VALUE_COUNTS.put(4, 2L);
+//      NULL_VALUE_COUNTS.put(1, 0L);
+//      NULL_VALUE_COUNTS.put(2, 2L);
+//      NAN_VALUE_COUNTS.put(4, 1L);
+//      LOWER_BOUNDS.put(1, longToBuffer(0L));
+//      UPPER_BOUNDS.put(1, longToBuffer(4L));
+//    }
+//    Metrics metrics = new Metrics(
+//            1,  // Map<Integer, Long> columnSizes
+//            new java.util.HashMap<> {
+//              3, 4,
+//      4
+//    }
+//            Map<Integer, Long> valueCounts,
+//            Map<Integer, Long> nullValueCounts,
+//            Map<Integer, Long> nanValueCounts) {
+//      this.rowCount = rowCount;
+//    )
+//    final DataFile file = DataFiles.builder(SPEC)
+//            .withPath("/path/to/data-d.parquet")
+//            .withFileSizeInBytes(10)
+//            .withMetrics(new Metrics(
+//
+//            ))
+//            .withPartitionPath("data_bucket=3") // easy way to set partition data for now
+//            .withRecordCount(1)
+//            .build();
+//  }
+
   @Test
   public void testTableScanHonorsSelectWithoutCaseSensitivity() {
     TableScan scan1 = table.newScan().caseSensitive(false).select("ID");

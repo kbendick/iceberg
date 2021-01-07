@@ -298,6 +298,7 @@ public class ManifestEvaluator {
       return ROWS_MIGHT_MATCH;
     }
 
+    @SuppressWarnings("BanSystemErr")
     @Override
     public <T> Boolean startsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
@@ -331,6 +332,8 @@ public class ManifestEvaluator {
     }
 
     @Override
+    // TODO(kbendick) - Should this be using ref's length for the comparison?????
+    //                  Big if true.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
       PartitionFieldSummary fieldStats = stats.get(pos);
@@ -341,31 +344,51 @@ public class ManifestEvaluator {
       }
 
       ByteBuffer prefixAsBytes = lit.toByteBuffer();
-
       Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
+      // TODO(kbendick) - DELETE ME
+//      if (comparator.compare(fieldStats.lowerBound(), fieldStats.upperBound()) == 0) {
+//        System.out.printf("Lower bound equals upper bound in ManifestEvaluator#notStartsWithMe - DELETE this loop");
+//      }
+
+      // TODO(kbendick) - I dont think the length assumptions here are correct.
       ByteBuffer lower = fieldStats.lowerBound();
       ByteBuffer upper = fieldStats.upperBound();
-      if (byteBufferStartsWithPrefix(lower, prefixAsBytes, comparator) &&
-              byteBufferStartsWithPrefix(upper, prefixAsBytes, comparator)) {
-        return ROWS_CANNOT_MATCH;
+      // truncate lower bound so that its length in bytes is not greater than the length of prefix
+      int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());
+      int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower, lowerLength), prefixAsBytes);
+      if (lowerCmp == 0) {
+        // truncate upper bound so that its length in bytes is not greater than the length of prefix
+        int upperLength = Math.min(prefixAsBytes.remaining(), upper.remaining());
+        int upperCmp = comparator.compare(BinaryUtil.truncateBinary(upper, upperLength), prefixAsBytes);
+        if (upperCmp == 0) {
+          return ROWS_CANNOT_MATCH;
+        }
       }
+
+//      // TODO(kbendick) - I switched lower and literalAsBytes (same with upper)
+//      //                  before commenting out. Very well may need to revert.
+//      if (byteBufferStartsWithPrefix(prefixAsBytes, lower, comparator) &&
+//              byteBufferStartsWithPrefix(prefixAsBytes, upper, comparator)) {
+//        return ROWS_CANNOT_MATCH;
+//      }
 
       return ROWS_MIGHT_MATCH;
     }
 
     // TODO(kbendick) - Move this into a shared class as it's used often and possibly refactor startsWith
     //                  to use it as well.
-    private boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix, Comparator<ByteBuffer> comparator) {
-      // TODO(kbendick) - Validate this part.
-      if (bb == null || prefix == null) {
-        return false;
-      }
-      if (prefix.remaining() > bb.remaining()) {
-        return false;
-      }
-      int length = Math.min(prefix.remaining(), bb.remaining());
-      int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
+    private boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer literal, Comparator<ByteBuffer> comparator) {
+      // TODO(kbendick) - Is this truncation correct?
+//      // TODO(kbendick) - Validate this part.
+//      if (bb == null || prefix == null) {
+//        return false;
+//      }
+//      if (prefix.remaining() > bb.remaining()) {
+//        return false;
+//      }
+      int length = Math.min(literal.remaining(), bb.remaining());
+      int cmp = comparator.compare(BinaryUtil.truncateBinary(literal, length), bb);
       return cmp == 0;
     }
 

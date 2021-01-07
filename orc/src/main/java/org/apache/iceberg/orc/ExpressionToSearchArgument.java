@@ -242,6 +242,7 @@ class ExpressionToSearchArgument extends ExpressionVisitors.BoundVisitor<Express
   public <T> Action startsWith(Bound<T> expr, Literal<T> lit) {
     // Cannot push down STARTS_WITH operator to ORC, so return TruthValue.YES_NO_NULL which signifies
     // that this predicate cannot help with filtering
+    // TODO - Can we use ORC's `equals` here if we truncate the bound and lit etc?
     return () -> this.builder.literal(TruthValue.YES_NO_NULL);
   }
 
