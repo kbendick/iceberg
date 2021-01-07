@@ -55,9 +55,9 @@ public class TestManifestReader extends TableTestBase {
   public void testInvalidUsage() throws IOException {
     ManifestFile manifest = writeManifest(FILE_A, FILE_B);
     AssertHelpers.assertThrows(
-            "Should not be possible to read manifest without explicit snapshot ids and inheritable metadata",
-            IllegalArgumentException.class, "Cannot read from ManifestFile with null (unassigned) snapshot ID",
-            () -> ManifestFiles.read(manifest, FILE_IO));
+        "Should not be possible to read manifest without explicit snapshot ids and inheritable metadata",
+        IllegalArgumentException.class, "Cannot read from ManifestFile with null (unassigned) snapshot ID",
+        () -> ManifestFiles.read(manifest, FILE_IO));
   }
 
   @Test

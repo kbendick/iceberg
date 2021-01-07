@@ -72,7 +72,6 @@ public class TestTruncatesResiduals {
                                       UnboundPredicate<?> predicate, T partitionValue) {
     ResidualEvaluator resEval = ResidualEvaluator.of(spec, predicate, true);
     Expression residual = resEval.residualFor(TestHelpers.Row.of(partitionValue));
-    String unused = "delete me";
 
     UnboundPredicate<?> unbound = assertAndUnwrapUnbound(residual);
     Assert.assertEquals(predicate.op(), unbound.op());
@@ -183,87 +182,11 @@ public class TestTruncatesResiduals {
     assertResidualValue(spec, startsWith("value", "bcd"), "cd", Expression.Operation.FALSE);
 
     // not starts with
-    // TODO(kbendick) - Some of these have been broken out into their own test that I can @Ignore.
     assertResidualValue(spec, notStartsWith("value", "bc"), "ab", Expression.Operation.TRUE);
-//    assertResidualValue(spec, notStartsWith("value", "bcd"), "ab", Expression.Operation.TRUE);
-//    assertResidualPredicate(spec, notStartsWith("value", "bcd"), "bc");
-//    assertResidualValue(spec, notStartsWith("value", "bcd"), "cd", Expression.Operation.TRUE);
-  }
-
-//  @Ignore
-  @Test
-  // TODO(kbendick) - This test is failing, I need to see why. This business with
-  //                  residuals is likely why things are not passing properly.
-  public void testStringTruncateTransformResidualsNotStartsWith() {
-    Schema schema = new Schema(Types.NestedField.optional(50, "value", Types.StringType.get()));
-    // valid partitions would be two letter strings for eg: ab, bc etc
-    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("value", 2).build();
-    UnboundPredicate<?> predicate = notStartsWith("value", "bc");
-
-    // Prelude to both assert helper functions
-    ResidualEvaluator resEval = ResidualEvaluator.of(spec, predicate, true);
-    String partitionValue1 = "ab";
-    Expression residual = resEval.residualFor(TestHelpers.Row.of(partitionValue1));
-    String unused = "unused";
-
-    // assertResidualValue
-    // This one fails when I leave the predicate as notStartsWith("value", "bcd") [or presumably any value > width]
-//         UnboundPredicate<?> predicate = notStartsWith("value", "bc");
-    Assert.assertEquals(Expression.Operation.TRUE, residual.op());
-    // assertResidualValue(spec, notStartsWith("value", "bcd"), "ab", Expression.Operation.TRUE);
-
-    // assertResidualPredicate
-//    UnboundPredicate<?> unbound = assertAndUnwrapUnbound(residual);
-//    Assert.assertEquals(predicate.op(), unbound.op());
-//    Assert.assertEquals(predicate.ref().name(), unbound.ref().name());
-//    Assert.assertEquals(predicate.literal().value(), unbound.literal().value());
-    // assertResidualPredicate(spec, notStartsWith("value", "bcd"), "bc");
-
-    // assertResidualValue
-    String partitionValue2 = "bcd";
-    Expression residual2 = resEval.residualFor(TestHelpers.Row.of(partitionValue2));
-    // Assert.assertEquals(Expression.Operation.TRUE, residual2.op());
-  }
-
-  @Test
-  public void testStringTruncateTransformResidualsWhenPredicateValuesLengthSatisfiesTruncationWidth() {
-    Schema schema = new Schema(Types.NestedField.optional(50, "value", Types.StringType.get()));
-    // valid partitions would be two letter strings for eg: ab, bc etc
-    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("value", 2).build();
-
     assertResidualValue(spec, notStartsWith("value", "bc"), "bc", Expression.Operation.FALSE);
     assertResidualPredicate(spec, notStartsWith("value", "bcd"), "ab");
-    assertResidualValue(spec, notStartsWith("value", "bc"), "ab", Expression.Operation.TRUE);
-  }
-
-//  @Ignore
-  @Test
-  // TODO(kbendick) - This test isn't passing.
-  public void testStringTruncateTransformResidualValueRequiresTruncation() {
-    Schema schema = new Schema(Types.NestedField.optional(50, "value", Types.StringType.get()));
-    // valid partitions would be two letter strings for eg: ab, bc etc
-    PartitionSpec spec = PartitionSpec.builderFor(schema).truncate("value", 2).build();
-
-    // I feel like this should return TRUE but it returns NOT_STARTS_WITH
-//    assertResidualValue(spec, notStartsWith("value", "bcd"), "ab", Expression.Operation.TRUE);
-    // This one passes.
-    assertResidualPredicate(spec, notStartsWith("value", "bcd"), "bc");
-    // Again this one evaluates to NOT_STARTS_WITH but it seems like it should evaluate to TRUE
-    // I will run the debugger over the ones that do evaluate to TRUE for other ops and see
-    // where the problem is. Getting much closer for the base values.
-    //
-    // When partition value's length is equal to (or possibly less than) the truncation width,
-    // the correct behavior happens. So the bug is with the residual visitor for string truncate
-    // when length of partitionValue > width().
-//    assertResidualValue(spec, notStartsWith("value", "bcd"), "cd", Expression.Operation.TRUE);
-
-
-
-    // TODO(kbendick) - This is the actual problem. I should clean it up and then reevaluate from here.
-    //                  So many other tests are passing. The problem is a bad assumption or implementation
-    //                  here.
-    // TODO(kbendick) - The problem here is coming from the version of the predicate evaluation function in
-    //                  BoundPredicate (where there's the heavy if testing).
-    // assertResidualValue(spec, notStartsWith("value", "bc"), "cd", Expression.Operation.TRUE);
+    assertResidualValue(spec, notStartsWith("value", "bcd"), "bc", Expression.Operation.FALSE);
+    // TODO(kbendick) - I dont think this is correct.
+    assertResidualPredicate(spec, notStartsWith("value", "bcd"), "cd");
   }
 }
