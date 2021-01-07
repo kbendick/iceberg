@@ -47,8 +47,6 @@ import static org.apache.iceberg.expressions.Expressions.rewriteNot;
  */
 public class InclusiveMetricsEvaluator {
   private static final int IN_PREDICATE_LIMIT = 200;
-  private static final boolean ROWS_MIGHT_MATCH = true;
-  private static final boolean ROWS_CANNOT_MATCH = false;
   private final Expression expr;
 
   public InclusiveMetricsEvaluator(Schema schema, Expression unbound) {
@@ -57,9 +55,7 @@ public class InclusiveMetricsEvaluator {
 
   public InclusiveMetricsEvaluator(Schema schema, Expression unbound, boolean caseSensitive) {
     StructType struct = schema.asStruct();
-    // TODO(kbendick) - In line this again.
-    Expression rewriteNotExpression = rewriteNot(unbound);
-    this.expr = Binder.bind(struct, rewriteNotExpression, caseSensitive);
+    this.expr = Binder.bind(struct, rewriteNot(unbound), caseSensitive);
   }
 
   /**
@@ -72,6 +68,9 @@ public class InclusiveMetricsEvaluator {
     // TODO: detect the case where a column is missing from the file using file's max field id.
     return new MetricsEvalVisitor().eval(file);
   }
+
+  private static final boolean ROWS_MIGHT_MATCH = true;
+  private static final boolean ROWS_CANNOT_MATCH = false;
 
   private class MetricsEvalVisitor extends BoundExpressionVisitor<Boolean> {
     private Map<Integer, Long> valueCounts = null;
