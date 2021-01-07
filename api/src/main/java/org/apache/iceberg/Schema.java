@@ -182,7 +182,6 @@ public class Schema implements Serializable {
    * @param name a String name
    * @return a Type for the sub-field or null if it is not found
    */
-  // TODO(kbendick) - Is there a bug here? If id shows up as non-null, shouldn't we return it?
   public NestedField findField(String name) {
     Preconditions.checkArgument(!name.isEmpty(), "Invalid column name: (empty)");
     Integer id = lazyNameToId().get(name);

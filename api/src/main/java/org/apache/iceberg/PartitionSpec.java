@@ -318,9 +318,6 @@ public class PartitionSpec implements Serializable {
     private final Schema schema;
     private final List<PartitionField> fields = Lists.newArrayList();
     private final Set<String> partitionNames = Sets.newHashSet();
-    // TODO(kbendick) - Possibly do we need to have a string fields (a la timeFields) to have
-    //                  special logic for not starts with (as it's not supported by the systems)?
-    //                  I'm pretty sure not but just marking the thought down.
     private Map<Integer, PartitionField> timeFields = Maps.newHashMap();
     private int specId = 0;
     private final AtomicInteger lastAssignedFieldId = new AtomicInteger(PARTITION_DATA_ID_START - 1);

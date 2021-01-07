@@ -80,17 +80,10 @@ public interface CloseableIterable<T> extends Iterable<T>, Closeable {
     };
   }
 
-  // TODO(kbendick) - Cast E to GenericManifestFile in the test I'm working on
-  //                  in TestManifestReaderFilterPartitionsOnNonPartitionColumns
-  //                  to GenericManifestEntry and then pull out lower and upper bounds.
   static <E> CloseableIterable<E> filter(CloseableIterable<E> iterable, Predicate<E> pred) {
     return combine(() -> new FilterIterator<E>(iterable.iterator()) {
       @Override
       protected boolean shouldKeep(E item) {
-        LOG.error("Testing item {} with predicate {} in filter method of CloseableIterator\n",
-                item, pred.toString());
-        boolean result = pred.test(item);
-        LOG.error("\t\tshouldKeep({}) with predicate({}) returned {}\n", item, pred.toString(), result);
         return pred.test(item);
       }
     }, iterable);

@@ -155,10 +155,7 @@ public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
       // note that all files are returned because the reader returns data files that may match, and the partition is
       // bucketing by data, which doesn't help filter files
       List<DataFile> expectedDataFiles = Lists.newArrayList(dataFiles).stream()
-              .filter(f -> {
-                String recordValue = Conversions.fromByteBuffer(Types.StringType.get(), f.upperBounds().get(4));
-                return !recordValue.startsWith("junc");
-              })
+              .filter(f -> !f.path().toString().contains("id_bucket=0")) // This is where we placed "junction"
               .collect(Collectors.toList());
       String[] expected = expectedDataFiles.stream().map(f -> f.path().toString()).toArray(String[]::new);
       Assert.assertArrayEquals("Should read the expected files", expected, files.toArray(new String[0]));
