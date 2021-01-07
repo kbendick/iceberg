@@ -84,7 +84,7 @@ public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
     return new Object[]{1, 2};
   }
 
-  private List<DataFile> buildDataFiles() {
+  private List<DataFile> buildDataFilesWithMetrics() {
     // We're going to filter "junction".
     List<String> dataValues = Lists.newArrayList("junction", "alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
@@ -100,7 +100,7 @@ public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
       final Map<Integer, ByteBuffer> upperBounds = Maps.newHashMap();
       lowerBounds.put(4, Conversions.toByteBuffer(Types.StringType.get(), dataValues.get(i)));
       upperBounds.put(4, Conversions.toByteBuffer(Types.StringType.get(), dataValues.get(i)));
-      return dataFileForPartition = DataFiles.builder(SPEC)
+      return DataFiles.builder(SPEC)
               .withPath(String.format("/path/to/test_manifest_reader/id_bucket=%d/data-%d.parquet", i, i))
               .withPartitionPath(String.format("id_bucket=%d", i))  // Easy way to set partiion
               .withRecordCount(1)
@@ -138,7 +138,7 @@ public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
   @Test
   public void testReaderWithFilterWithoutSelect() throws IOException {
     // Write manifest file directly.
-    final List<DataFile> dataFiles = buildDataFiles();
+    final List<DataFile> dataFiles = buildDataFilesWithMetrics();
     ManifestFile manifest = writeManifest(1000L, dataFiles.toArray(new DataFile[0]));
 
     // Set up partition spec ID map so we can use ManifestFiles.read with a filter on it

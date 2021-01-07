@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DataFile;
 import org.apache.iceberg.DataFiles;
@@ -509,37 +510,18 @@ public class TestFilteredScan {
     Assert.assertEquals(1, reader.planInputPartitions().size());
   }
 
-//  @Ignore
   @Test
-  // TODO(kbendick) - This is reading in 9 partitions. It should be getting
-  //                  bounds based on the data file that it can use (like the
-  //                  starts with one above. So we need to check that.
   public void testPartitionedByIdNotStartsWith() {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
     DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
-            "path", location.toString(),
-            "read.split.planning-lookback", "20")
-    );
-
-//            This is a write config but lets see if it can help.
-//            "write.summary.partition-limit", "50")
+            "path", location.toString()
+    ));
 
     IcebergSource source = new IcebergSource();
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new Not(new StringStartsWith("data", "junc")));
 
-    // TODO(kbendick) - Delete me after fixing this test.
-    //
-    //  org.apache.spark.sql.types.StructType schema = reader.readSchema();
-    //  List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
-    //  int len = inputPartitions.size();
-
-    // TODO - I'd like this to be 9, but it keeps coming up as 10. Even though spark does not natively support
-    //        NOT STARTS WITH, we _shouuld_ be still able to push down this predicate due to
-    //        the manifest file having the lower bound in order to remove that partition.
-    //        OF note, it comes up as 9 in the spark3 tests. Possibly because we don't have the injections
-    //        this can't work?
     Assert.assertEquals(9, reader.planInputPartitions().size());
   }
 
@@ -560,11 +542,6 @@ public class TestFilteredScan {
   }
 
   @Test
-  // TODO(kbendick) - Somewhere in the last two commits I reversed some stuff, probably
-  //                  related to residuels (possibly in truncateArray or truncateArrayString)
-  //                  which is now causing this to return the opposite of values. :(.
-  //
-  // Need to break this into multiple PRs.
   public void testUnpartitionedNotStartsWith() {
     Dataset<Row> df = spark.read()
             .format("iceberg")
@@ -575,9 +552,6 @@ public class TestFilteredScan {
             .where("data NOT LIKE 'jun%'")
             .as(Encoders.STRING())
             .collectAsList();
-
-    // df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
-    // df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
 
     List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
             "brush", "trap", "element", "limited", "global", "goldfish");
@@ -598,11 +572,10 @@ public class TestFilteredScan {
             .as(Encoders.STRING())
             .collectAsList();
 
-    // df.select("data").where(not(column("data").startsWith("junc"))).as(Encoders.STRING()).explain(true);
-    // df.select("data").where("data NOT LIKE 'jun%'").as(Encoders.STRING()).explain(true);
-
-    List<String> expected = Lists.newArrayList("alligator", "forrest", "clapping",
-            "brush", "trap", "element", "limited", "global", "goldfish");
+    List<String> expected = testRecords(SCHEMA).stream()
+            .map(r -> r.getField("data").toString())
+            .filter(d -> !d.startsWith("jun"))
+            .collect(Collectors.toList());
 
     Assert.assertEquals(9, matchedData.size());
     Assert.assertEquals(new HashSet<>(expected), new HashSet<>(matchedData));
