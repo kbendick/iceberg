@@ -52,11 +52,11 @@ public class TestNotStartsWith {
     assertProjectionInclusive(spec, notStartsWith(COLUMN, "abab"), "abab", Expression.Operation.NOT_STARTS_WITH);
     assertProjectionInclusive(spec, notStartsWith(COLUMN, "ababab"), "abab", Expression.Operation.NOT_STARTS_WITH);
 
-    // TODO(kbendick) - The Strict Projection seems to be where we are failing. Progress!
     assertProjectionStrict(spec, notStartsWith(COLUMN, "ab"), "ab", Expression.Operation.NOT_STARTS_WITH);
-    // TODO(kbendick) - Logically, should this be NOT_STARTS_WITH or can we rewrite to NOT_EQ for strict projection?
+    // TODO(kbendick) - Logically, is this rewrite valid for strict projections?
     assertProjectionStrict(spec, notStartsWith(COLUMN, "abab"), "abab", Expression.Operation.NOT_EQ);
 
+    // Due to truncation, we can't know if any of the values start with this or not.
     Expression projection = Projections.strict(spec).project(notStartsWith(COLUMN, "ababab"));
     Assert.assertTrue(projection instanceof False);
   }
@@ -72,7 +72,6 @@ public class TestNotStartsWith {
     UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
-    // TODO(kbendick) - This should actually be returning true?
     Assert.assertFalse("notStartsWith(abcde, truncate(abcde,2))  => false",
             evaluator.eval(TestHelpers.Row.of("abcde")));
 
@@ -88,7 +87,7 @@ public class TestNotStartsWith {
   }
 
   @Test
-  public void testNotStartsWithWhenValueIsLongerThanTruncationWidth() {
+  public void testNotStartsWithWhenValueIsLongerThanWidth() {
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 1);
     Expression expr = notStartsWith(COLUMN, "ab");
     BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
@@ -119,7 +118,7 @@ public class TestNotStartsWith {
     Assert.assertFalse("truncate(ab, 16) notStartsWith ab => false",
             evaluator.eval(TestHelpers.Row.of("ab")));
 
-    Assert.assertTrue("truncate(a, 16) notStartsWith ab => false",
+    Assert.assertTrue("truncate(a, 16) notStartsWith ab => true",
             evaluator.eval(TestHelpers.Row.of("a")));
   }
 
