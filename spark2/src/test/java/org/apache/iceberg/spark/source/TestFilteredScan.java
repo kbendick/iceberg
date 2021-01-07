@@ -502,11 +502,6 @@ public class TestFilteredScan {
     DataSourceReader reader = source.createReader(options);
     pushFilters(reader, new StringStartsWith("data", "junc"));
 
-    // TODO(kbendick) - Delete me after testing and finalizing.
-    org.apache.spark.sql.types.StructType schema = reader.readSchema();
-    List<InputPartition<InternalRow>> inputPartitions = reader.planInputPartitions();
-    int len = inputPartitions.size();
-
     Assert.assertEquals(1, reader.planInputPartitions().size());
   }
 
@@ -561,7 +556,7 @@ public class TestFilteredScan {
   }
 
   @Test
-  public void testUnpartitionedNotStartsWithUsingSparkFilterFunctions() {
+  public void testUnpartitionedNotStartsWithUsingSparkFunctions() {
     Dataset<Row> df = spark.read()
             .format("iceberg")
             .option(SparkReadOptions.VECTORIZATION_ENABLED, String.valueOf(vectorized))
