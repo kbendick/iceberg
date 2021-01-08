@@ -298,7 +298,6 @@ public class ManifestEvaluator {
       return ROWS_MIGHT_MATCH;
     }
 
-    @SuppressWarnings("BanSystemErr")
     @Override
     public <T> Boolean startsWith(BoundReference<T> ref, Literal<T> lit) {
       int pos = Accessors.toPosition(ref.accessor());
