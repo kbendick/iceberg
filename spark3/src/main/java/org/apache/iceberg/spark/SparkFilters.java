@@ -48,7 +48,6 @@ import org.apache.spark.sql.sources.LessThanOrEqual;
 import org.apache.spark.sql.sources.Not;
 import org.apache.spark.sql.sources.Or;
 import org.apache.spark.sql.sources.StringStartsWith;
-import org.jetbrains.annotations.Nullable;
 
 import static org.apache.iceberg.expressions.Expressions.and;
 import static org.apache.iceberg.expressions.Expressions.equal;
@@ -69,9 +68,6 @@ public class SparkFilters {
   private SparkFilters() {
   }
 
-  // TODO(kbendick) - Do we need to get NOT_STARTS_WITH in here or will
-  //                  that likely get covered via the negation? Spark does not provide
-  //                  a StringNotStartsWith Filter.
   private static final Map<Class<? extends Filter>, Operation> FILTERS = ImmutableMap
       .<Class<? extends Filter>, Operation>builder()
       .put(AlwaysTrue$.class, Operation.TRUE)
@@ -101,7 +97,7 @@ public class SparkFilters {
     return expression;
   }
 
-  public static @Nullable Expression convert(Filter filter) {
+  public static Expression convert(Filter filter) {
     // avoid using a chain of if instanceof statements by mapping to the expression enum.
     Operation op = FILTERS.get(filter.getClass());
     if (op != null) {
