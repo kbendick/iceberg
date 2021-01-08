@@ -171,9 +171,6 @@ public class Comparators {
     return (Comparator<T>) NullsLast.INSTANCE;
   }
 
-  // TODO(kbendick) - Possibly open an issue to be using the CharSeqComparator instead of just
-  //                  java string comparison.
-  //                  Should add tests in other languages / alphabets to be sure.
   public static Comparator<CharSequence> charSequences() {
     return CharSeqComparator.INSTANCE;
   }
