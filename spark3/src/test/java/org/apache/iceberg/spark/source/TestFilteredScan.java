@@ -453,7 +453,6 @@ public class TestFilteredScan {
   }
 
   @Test
-  // TODO(kbendick) - Figure out why this is working in spark3 but not spark2.
   public void testPartitionedByIdNotStartsWith() {
     Table table = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
@@ -470,7 +469,6 @@ public class TestFilteredScan {
   }
 
   @Test
-  // TODO(kbendick) - Figure out how I broke this in Spark 2 but not 3.
   public void testUnpartitionedStartsWith() {
     Dataset<Row> df = spark.read()
         .format("iceberg")

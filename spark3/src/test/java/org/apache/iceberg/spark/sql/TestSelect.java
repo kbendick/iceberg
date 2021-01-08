@@ -111,7 +111,6 @@ public class TestSelect extends SparkCatalogTestBase {
   }
 
   @Test
-  // TODO(kbendick) - Make a separate PR for this and validate that the expected filter string is correct.
   public void testStartsWithExpressionPushdown() {
     List<Object[]> expected = ImmutableList.of(row("b"));
     List<Object[]> actual = sql("SELECT data from " + tableName + " WHERE data LIKE 'b%'");
@@ -119,6 +118,7 @@ public class TestSelect extends SparkCatalogTestBase {
     assertEquals("Should return all expected rows", expected, actual);
     Assert.assertEquals("Should create only one scan", 1, scanEventCount);
     // TODO(kbendick) - This doesn't feel correct. Shouldn't this be DATA LIKE 'b%'?
+    // TODO - We need to implement proper equals and hashCode on filters
     Assert.assertEquals("Should push down expected filter",
             "(data IS NOT NULL AND data LIKE '\"b\"%')",
             Spark3Util.describe(lastScanEvent.filter()));
