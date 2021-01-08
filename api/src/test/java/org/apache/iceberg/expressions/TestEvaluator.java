@@ -237,8 +237,8 @@ public class TestEvaluator {
     StructType struct = StructType.of(required(24, "s", Types.StringType.get()));
     Evaluator evaluator = new Evaluator(struct, notStartsWith("s", "abc"));
     Assert.assertFalse("abc notStartsWith abc => false", evaluator.eval(Row.of("abc")));
-    Assert.assertTrue("abc notStartsWith Abc => false", evaluator.eval(Row.of("Abc")));
-    Assert.assertTrue("a notStartsWith abc => false", evaluator.eval(Row.of("a")));
+    Assert.assertTrue("abc notStartsWith Abc => true", evaluator.eval(Row.of("Abc")));
+    Assert.assertTrue("a notStartsWith abc => true", evaluator.eval(Row.of("a")));
   }
 
   @Test
