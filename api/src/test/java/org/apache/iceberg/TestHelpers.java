@@ -319,8 +319,6 @@ public class TestHelpers {
       this(path, partition, recordCount, null, null, null, null, null);
     }
 
-    // TODO(kbendick) - The function needs to make use of all of these statistics
-    //                  in whatever combination possible.
     public TestDataFile(String path, StructLike partition, long recordCount,
                         Map<Integer, Long> valueCounts,
                         Map<Integer, Long> nullValueCounts,
