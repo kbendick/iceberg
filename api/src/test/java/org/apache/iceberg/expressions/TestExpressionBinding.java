@@ -21,7 +21,6 @@ package org.apache.iceberg.expressions;
 
 import org.apache.iceberg.TestHelpers;
 import org.apache.iceberg.exceptions.ValidationException;
-import org.apache.iceberg.expressions.Expression.Operation;
 import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.StructType;
 import org.junit.Assert;
@@ -156,7 +155,7 @@ public class TestExpressionBinding {
     TestHelpers.assertAllReferencesBound("NotStartsWith", boundExpr);
     // Make sure the expression is a NotStartsWith
     BoundPredicate<?> pred = TestHelpers.assertAndUnwrap(boundExpr, BoundPredicate.class);
-    Assert.assertEquals("Should be right operation", Operation.NOT_STARTS_WITH, pred.op());
+    Assert.assertEquals("Should be right operation", Expression.Operation.NOT_STARTS_WITH, pred.op());
     Assert.assertEquals("Should bind term to correct field id", 21, pred.term().ref().fieldId());
   }
 
