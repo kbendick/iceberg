@@ -51,6 +51,8 @@ import static org.apache.iceberg.types.Conversions.toByteBuffer;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
+// TODO(kbendick) - Make a ticket for adding a startsWith and notStartsWith
+//                  test here.
 public class TestStrictMetricsEvaluator {
   private static final Schema SCHEMA = new Schema(
       required(1, "id", IntegerType.get()),
@@ -95,7 +97,7 @@ public class TestStrictMetricsEvaluator {
           .put(12, 0L)
           .put(13, 1L)
           .build(),
-      // nan value counts
+  // nan value counts
       ImmutableMap.of(
           8, 50L,
           9, 10L,
