@@ -40,6 +40,7 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StringType;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.iceberg.TestHelpers.assertAndUnwrapUnbound;
@@ -111,6 +112,8 @@ public class TestNotStartsWith {
             evaluator.eval(TestHelpers.Row.of(trunc.apply("a"))));
   }
 
+  // TODO(kbendick) - Get rid of this test probably.
+  @Ignore
   @Test
   public void testUnpartitionedTruncatedRowEvaluator() {
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
