@@ -29,7 +29,6 @@ import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.False;
 import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.expressions.Projections;
-import org.apache.iceberg.expressions.ResidualEvaluator;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.types.Types;
 import org.junit.Assert;

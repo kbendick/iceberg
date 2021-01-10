@@ -95,7 +95,6 @@ public class TestManifestReaderStats extends TableTestBase {
     //                  sure if they're being used).
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
             .filterRows(Expressions.notStartsWith("data", "Z"))) {
-      System.out.println("Processing reader in full stats ManifestReader with notStartsWith");
       CloseableIterable<ManifestEntry<DataFile>> entries = reader.entries();
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());
@@ -107,7 +106,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count"))
-        .filterRows(Expressions.notStartsWith("data", "Z"))) {
+        .filterRows(Expressions.equal("id", 3))) {
       CloseableIterable<ManifestEntry<DataFile>> entries = reader.entries();
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());
@@ -119,7 +118,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count"))
-        .filterRows(Expressions.notStartsWith("data", "Z"))) {
+        .filterRows(Expressions.equal("id", 3))) {
       DataFile entry = reader.iterator().next();
       assertStatsDropped(entry);
     }
@@ -129,7 +128,7 @@ public class TestManifestReaderStats extends TableTestBase {
     ManifestFile manifest = writeManifest(1000L, FILE);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
         .select(ImmutableSet.of("record_count", "value_counts"))
-        .filterRows(Expressions.equal("id", 0))) {
+        .filterRows(Expressions.equal("id", 3))) {
       DataFile entry = reader.iterator().next();
       assertFullStats(entry);
     }

@@ -416,7 +416,8 @@ public class TableTestBase {
   protected static class Assertions {
     private final boolean enabled;
 
-    private Assertions(int validForVersion, int formatVersion) {
+    // TODO(kbendick) - Revert to private once I refactor TestManifestReaderFilterPartitionsOnNonPartitionColumns
+    public Assertions(int validForVersion, int formatVersion) {
       this.enabled = validForVersion == formatVersion;
     }
 

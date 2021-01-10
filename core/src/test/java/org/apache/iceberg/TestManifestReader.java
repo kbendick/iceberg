@@ -59,15 +59,15 @@ public class TestManifestReader extends TableTestBase {
   public void testReaderWithFilterWithoutSelect() throws IOException {
     ManifestFile manifest = writeManifest(1000L, FILE_A, FILE_B, FILE_C);
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
-            .filterRows(Expressions.equal("id", 0))) {
+        .filterRows(Expressions.equal("id", 0))) {
       List<String> files = Streams.stream(reader)
-              .map(file -> file.path().toString())
-              .collect(Collectors.toList());
+          .map(file -> file.path().toString())
+          .collect(Collectors.toList());
 
       // note that all files are returned because the reader returns data files that may match, and the partition is
       // bucketing by data, which doesn't help filter files
       Assert.assertEquals("Should read the expected files",
-              Lists.newArrayList(FILE_A.path(), FILE_B.path(), FILE_C.path()), files);
+          Lists.newArrayList(FILE_A.path(), FILE_B.path(), FILE_C.path()), files);
     }
   }
 
@@ -75,9 +75,9 @@ public class TestManifestReader extends TableTestBase {
   public void testInvalidUsage() throws IOException {
     ManifestFile manifest = writeManifest(FILE_A, FILE_B);
     AssertHelpers.assertThrows(
-            "Should not be possible to read manifest without explicit snapshot ids and inheritable metadata",
-            IllegalArgumentException.class, "Cannot read from ManifestFile with null (unassigned) snapshot ID",
-            () -> ManifestFiles.read(manifest, FILE_IO));
+        "Should not be possible to read manifest without explicit snapshot ids and inheritable metadata",
+        IllegalArgumentException.class, "Cannot read from ManifestFile with null (unassigned) snapshot ID",
+        () -> ManifestFiles.read(manifest, FILE_IO));
   }
 
   @Test
@@ -98,9 +98,9 @@ public class TestManifestReader extends TableTestBase {
   @Test
   public void testManifestReaderWithUpdatedPartitionMetadataForV1Table() throws IOException {
     PartitionSpec spec = PartitionSpec.builderFor(table.schema())
-            .bucket("id", 8)
-            .bucket("data", 16)
-            .build();
+        .bucket("id", 8)
+        .bucket("data", 16)
+        .build();
     table.ops().commit(table.ops().current(), table.ops().current().updatePartitionSpec(spec));
 
     ManifestFile manifest = writeManifest(1000L, manifestEntry(Status.EXISTING, 123L, FILE_A));
