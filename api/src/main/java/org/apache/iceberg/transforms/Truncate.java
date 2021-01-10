@@ -27,7 +27,6 @@ import org.apache.iceberg.expressions.BoundPredicate;
 import org.apache.iceberg.expressions.BoundTransform;
 import org.apache.iceberg.expressions.BoundUnaryPredicate;
 import org.apache.iceberg.expressions.Expression;
-import org.apache.iceberg.expressions.Expression.Operation;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.UnboundPredicate;
 import org.apache.iceberg.relocated.com.google.common.base.Objects;
@@ -308,7 +307,7 @@ abstract class Truncate<T> implements Transform<T, T> {
         // TODO(kbendick) - Either come up with a name for these StringStartsWith like predicates
         //                  and match against those or just form a collection and match against in.
         //                  instead of a bunch of ifs.
-        if (pred.op() == Expression.Operation.STARTS_WITH || pred.op() == Operation.NOT_STARTS_WITH) {
+        if (pred.op() == Expression.Operation.STARTS_WITH || pred.op() == Expression.Operation.NOT_STARTS_WITH) {
           if (pred.literal().value().length() < width()) {
             return Expressions.predicate(pred.op(), name, pred.literal().value());
           } else if (pred.literal().value().length() == width()) {

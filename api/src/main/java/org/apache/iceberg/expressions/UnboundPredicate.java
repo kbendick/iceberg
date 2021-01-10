@@ -151,6 +151,7 @@ public class UnboundPredicate<T> extends Predicate<T, UnboundTerm<T>> implements
 
   private Expression bindLiteralOperation(BoundTerm<T> boundTerm) {
     Literal<T> lit = literal().to(boundTerm.type());
+
     if (lit == null) {
       throw new ValidationException("Invalid value for conversion to type %s: %s (%s)",
           boundTerm.type(), literal().value(), literal().value().getClass().getName());
