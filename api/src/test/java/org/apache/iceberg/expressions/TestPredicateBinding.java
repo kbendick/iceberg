@@ -110,10 +110,9 @@ public class TestPredicateBinding {
     }
   }
 
-  // TODO(kbendick) - Does this test add any value? I think no.
   @Test
   @SuppressWarnings("unchecked")
-  public void testComparisonPredicateBindingForStringComparisons() {
+  public void tesPredicateBindingForStringPrefixComparisons() {
     StructType struct = StructType.of(required(17, "x", Types.StringType.get()));
 
     for (Expression.Operation op : Arrays.asList(STARTS_WITH, NOT_STARTS_WITH)) {
