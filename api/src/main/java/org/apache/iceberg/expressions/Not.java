@@ -19,7 +19,6 @@
 
 package org.apache.iceberg.expressions;
 
-// TODO - Make a ticket for implementing equals and hashCode in Expression and subclasses
 public class Not implements Expression {
   private final Expression child;
 
