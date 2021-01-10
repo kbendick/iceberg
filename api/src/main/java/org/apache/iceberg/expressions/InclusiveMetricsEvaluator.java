@@ -46,8 +46,8 @@ import static org.apache.iceberg.expressions.Expressions.rewriteNot;
  * return value of {@code eval} is false.
  */
 public class InclusiveMetricsEvaluator {
-
   private static final int IN_PREDICATE_LIMIT = 200;
+
   private final Expression expr;
 
   public InclusiveMetricsEvaluator(Schema schema, Expression unbound) {
