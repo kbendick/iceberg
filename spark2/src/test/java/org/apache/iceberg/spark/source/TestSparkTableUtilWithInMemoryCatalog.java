@@ -39,10 +39,6 @@ import org.apache.iceberg.spark.SparkTableUtil;
 import org.apache.iceberg.spark.SparkTableUtil.SparkPartition;
 import org.apache.iceberg.types.Conversions;
 import org.apache.iceberg.types.Types;
-import org.apache.iceberg.types.Types.LongType;
-import org.apache.iceberg.types.Types.NestedField;
-import org.apache.iceberg.types.Types.StringType;
-import org.apache.iceberg.types.Types.StructType;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Encoders;
@@ -62,6 +58,7 @@ import org.junit.rules.TemporaryFolder;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
+// TODO(kbendick) - Consider adding my metrics test here as there's a helper for it.
 public class TestSparkTableUtilWithInMemoryCatalog {
 
   private static final HadoopTables TABLES = new HadoopTables(new Configuration());
@@ -380,12 +377,12 @@ public class TestSparkTableUtilWithInMemoryCatalog {
 
       // don't include `extra_col` and `nested_2` on purpose
       Schema schema = new Schema(
-          optional(1, "id", LongType.get()),
-          required(2, "struct", StructType.of(
-              required(4, "nested_1", StringType.get()),
-              required(5, "nested_3", StringType.get())
+          optional(1, "id", Types.LongType.get()),
+          required(2, "struct", Types.StructType.of(
+              required(4, "nested_1", Types.StringType.get()),
+              required(5, "nested_3", Types.StringType.get())
           )),
-          required(3, "data", StringType.get())
+          required(3, "data", Types.StringType.get())
       );
       PartitionSpec spec = PartitionSpec.builderFor(schema)
           .identity("data")
@@ -400,8 +397,6 @@ public class TestSparkTableUtilWithInMemoryCatalog {
           .set(TableProperties.METRICS_MODE_COLUMN_CONF_PREFIX + "struct.nested_3", "full")
           .set(TableProperties.DEFAULT_NAME_MAPPING, NameMappingParser.toJson(nameMapping))
           .commit();
-
-      table.properties().forEach((k, v) -> System.out.printf("Table prop(k, v) = (%s, %s)", k, v));
 
       File stagingDir = temp.newFolder("staging-dir");
       SparkTableUtil.importSparkTable(spark, new TableIdentifier("parquet_table"), table, stagingDir.toString());
@@ -422,13 +417,13 @@ public class TestSparkTableUtilWithInMemoryCatalog {
       Assert.assertEquals("Must have lower bounds for 2 columns", 2, bounds.get(0).getMap(0).size());
       Assert.assertEquals("Must have upper bounds for 2 columns", 2, bounds.get(0).getMap(1).size());
 
-      NestedField nestedField1 = table.schema().findField("struct.nested_1");
+      Types.NestedField nestedField1 = table.schema().findField("struct.nested_1");
       checkFieldMetrics(fileDF, nestedField1, true);
 
-      NestedField id = table.schema().findField("id");
+      Types.NestedField id = table.schema().findField("id");
       checkFieldMetrics(fileDF, id, 1L, 2L);
 
-      NestedField nestedField3 = table.schema().findField("struct.nested_3");
+      Types.NestedField nestedField3 = table.schema().findField("struct.nested_3");
       checkFieldMetrics(fileDF, nestedField3, "f", "g");
     } finally {
       spark.sql("DROP TABLE parquet_table");
