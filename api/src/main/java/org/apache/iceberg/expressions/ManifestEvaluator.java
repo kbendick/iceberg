@@ -341,9 +341,9 @@ public class ManifestEvaluator {
       }
 
       ByteBuffer prefixAsBytes = lit.toByteBuffer();
+
       Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
-      // TODO(kbendick) - I dont think the length assumptions here are correct.
       ByteBuffer lower = fieldStats.lowerBound();
       // truncate lower bound so that its length in bytes is not greater than the length of prefix
       int lowerLength = Math.min(prefixAsBytes.remaining(), lower.remaining());

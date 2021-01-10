@@ -365,14 +365,8 @@ public class ExpressionVisitors {
           return visitor.alwaysTrue();
         case FALSE:
           return visitor.alwaysFalse();
-        case NOT: /* Special case for Not(StartsWith) to be => NOT_STARTS_WITH */
-          // TODO(kbendick) - Don't think this is needed. Might be needed for spark
-          //                  as Catalyst uses Not(StringStartsWith), but that
-          //                  rewrite is handled in Spark's Filter conversions
+        case NOT:
           Not not = (Not) expr;
-          if (not.child().op() == Expression.Operation.STARTS_WITH) {
-            return visitEvaluator(not.child().negate(), visitor);
-          }
           return visitor.not(visitEvaluator(not.child(), visitor));
         case AND:
           And and = (And) expr;

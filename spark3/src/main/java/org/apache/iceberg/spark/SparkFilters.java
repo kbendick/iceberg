@@ -156,16 +156,11 @@ public class SparkFilters {
                   .map(SparkFilters::convertLiteral)
                   .collect(Collectors.toList()));
 
-        // TODO - Do we benefit from having a special case here for NOT StringStartsWith
-        //        to be able to use the Iceberg NOT_STARTS_WITH operation?
         case NOT:
           Not notFilter = (Not) filter;
           Filter sparkChild = notFilter.child();
           // Special case to use the Iceberg NOT_STARTS_WITH operator for
-          // Spark Not StringStartsWith
-          // TODO(kbendick) - Find a cleaner way to handle this. The current map
-          //                 of Spark Filters -> Iceberg Operations doesn't work
-          //                 super well here.
+          // Not(StringStartsWith) to allow filter push down.
           if (sparkChild instanceof StringStartsWith) {
             StringStartsWith stringStartsWith = (StringStartsWith) sparkChild;
             return notStartsWith(stringStartsWith.attribute(), stringStartsWith.value());

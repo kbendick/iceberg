@@ -186,7 +186,6 @@ public class TestTruncatesResiduals {
     assertResidualValue(spec, notStartsWith("value", "bc"), "bc", Expression.Operation.FALSE);
     assertResidualPredicate(spec, notStartsWith("value", "bcd"), "ab");
     assertResidualValue(spec, notStartsWith("value", "bcd"), "bc", Expression.Operation.FALSE);
-    // TODO(kbendick) - I dont think this is correct.
     assertResidualPredicate(spec, notStartsWith("value", "bcd"), "cd");
   }
 }
