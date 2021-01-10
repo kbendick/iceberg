@@ -67,6 +67,11 @@ public class TestStartsWith {
     UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
+    // TODO(kbendick) - Updated this test from startsWith(abcde, truncate(abcde, 2)) => true
+    //                  to be more meaningful (e.g. show that the truncation means that startsWith
+    //                  is still MIGHT match in this case - currently it would evaluate to true regardless
+    //                  of the truncation). Either add this as a comment on the new PR
+    //                  or open a different PR.
     Assert.assertTrue("startsWith(abcde, truncate(abcdg,2))  => true",
         evaluator.eval(TestHelpers.Row.of("abcdg")));
   }
