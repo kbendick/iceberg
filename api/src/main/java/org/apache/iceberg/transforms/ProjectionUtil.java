@@ -221,11 +221,6 @@ class ProjectionUtil {
       case EQ:
         // there is no predicate that guarantees equality because adjacent values transform to the same partition
         return null;
-      // TODO(kbendick) - These two cases are new and likely not needed.
-//      case STARTS_WITH:
-//        return predicate(Expression.Operation.STARTS_WITH, name, transform.apply(boundary));
-//      case NOT_STARTS_WITH:
-//        return predicate(Expression.Operation.NOT_STARTS_WITH, name, transform.apply(boundary));
       default:
         return null;
     }
