@@ -383,7 +383,8 @@ public class InclusiveMetricsEvaluator {
 
       Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
-      if (lowerBounds != null && lowerBounds.containsKey(id)) {
+      if (lowerBounds != null && upperBounds != null &&
+              lowerBounds.containsKey(id) && upperBounds.containsKey(id)) {
         ByteBuffer lower = lowerBounds.get(id);
         // truncate lower bound so that its length in bytes is not greater than the length of prefix
         int lengthLower = Math.min(prefixAsBytes.remaining(), lower.remaining());
