@@ -303,7 +303,6 @@ abstract class Truncate<T> implements Transform<T, T> {
         return Expressions.predicate(predicate.op(), name);
       } else if (predicate instanceof BoundLiteralPredicate) {
         BoundLiteralPredicate<CharSequence> pred = predicate.asLiteralPredicate();
-        // TODO(kbendick) - Likely NOT_STARTS_WITH needs to be handled here.
         // TODO(kbendick) - Either come up with a name for these StringStartsWith like predicates
         //                  and match against those or just form a collection and match against in.
         //                  instead of a bunch of ifs.
@@ -319,13 +318,6 @@ abstract class Truncate<T> implements Transform<T, T> {
             } else {
               return Expressions.notEqual(name, pred.literal().value());
             }
-//            } else {
-//              // Can we substitute notEqual in here? No.
-//              // Consider the case of noteStartsWith(abcd, truncate(a, 2)).
-//              // ab is not equal to a (would return true), but ab notStartsWith a
-//              // is false (as ab startsWith a).
-//              return Expressions.equal(name, pred.literal().value());
-//            }
           } else {
             return ProjectionUtil.truncateArrayStrict(name, pred, this);
           }

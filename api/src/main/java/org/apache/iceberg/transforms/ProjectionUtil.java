@@ -198,8 +198,6 @@ class ProjectionUtil {
       case STARTS_WITH:
         return predicate(Expression.Operation.STARTS_WITH, name, transform.apply(boundary));
       case NOT_STARTS_WITH:
-//        // TODO(kbendick) - Add support for this? Also, the TODO below this is preexisting.
-//        // TODO(kbendick) - Needs test to see if this transform is valid.
         return predicate(Expression.Operation.NOT_STARTS_WITH, name, transform.apply(boundary));
 //        case IN: // TODO
 //          return Expressions.predicate(Operation.IN, name, transform.apply(boundary));
