@@ -303,32 +303,31 @@ abstract class Truncate<T> implements Transform<T, T> {
         return Expressions.predicate(predicate.op(), name);
       } else if (predicate instanceof BoundLiteralPredicate) {
         BoundLiteralPredicate<CharSequence> pred = predicate.asLiteralPredicate();
-        // TODO(kbendick) - Either come up with a name for these StringStartsWith like predicates
-        //                  and match against those or just form a collection and match against in.
-        //                  instead of a bunch of ifs.
-        if (pred.op() == Expression.Operation.STARTS_WITH || pred.op() == Expression.Operation.NOT_STARTS_WITH) {
+        // TODO(kbendick) - Is it worth it to have a pred.isStringPrefixPredicate function
+        //                  on BoundLiteralPredicate to clean this up a bit (similar to predicate.isSetPredicate()).
+        //                  Otherwise possibly find a way to clean this up as it's pretty ugly.
+        if (isStringPrefixPredicate(pred)) {
           if (pred.literal().value().length() < width()) {
             return Expressions.predicate(pred.op(), name, pred.literal().value());
           } else if (pred.literal().value().length() == width()) {
-            // TODO(kbendick) - Especially clean up this nastiness.
-            // TODO(kbendick) / TODISCUSS(kbendick) - Can we say notEquals for NOT_STARTS_WITH given that this is a
-            //                                        strict projection?
             if (pred.op() == Expression.Operation.STARTS_WITH) {
               return Expressions.equal(name, pred.literal().value());
             } else {
               return Expressions.notEqual(name, pred.literal().value());
             }
-          } else {
-            return ProjectionUtil.truncateArrayStrict(name, pred, this);
           }
         } else {
-          // TODO(kbendick) - Also verify this code path is happy and tested for notStartsWith.
           return ProjectionUtil.truncateArrayStrict(name, pred, this);
         }
       } else if (predicate.isSetPredicate() && predicate.op() == Expression.Operation.NOT_IN) {
         return ProjectionUtil.transformSet(name, predicate.asSetPredicate(), this);
       }
       return null;
+    }
+
+    private boolean isStringPrefixPredicate(BoundPredicate<CharSequence> pred) {
+      return pred.op() == Expression.Operation.STARTS_WITH ||
+          pred.op() == Expression.Operation.NOT_STARTS_WITH;
     }
 
     @Override
