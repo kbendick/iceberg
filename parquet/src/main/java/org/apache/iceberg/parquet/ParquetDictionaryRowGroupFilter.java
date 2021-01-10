@@ -374,6 +374,7 @@ public class ParquetDictionaryRowGroupFilter {
     }
 
     @Override
+    // TODO - Ensure this is covered by a test case.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
@@ -382,14 +383,11 @@ public class ParquetDictionaryRowGroupFilter {
         return ROWS_MIGHT_MATCH;
       }
 
+      String litAsString = lit.value().toString();
       Set<T> dictionary = dict(id, lit.comparator());
-      for (T item : dictionary) {
-        if (!item.toString().startsWith(lit.value().toString())) {
-          return ROWS_MIGHT_MATCH;
-        }
-      }
-
-      return ROWS_CANNOT_MATCH;
+      return dictionary
+              .stream()
+              .allMatch(item -> item.toString().startsWith(litAsString)) ? ROWS_CANNOT_MATCH : ROWS_MIGHT_MATCH;
     }
 
     @SuppressWarnings("unchecked")

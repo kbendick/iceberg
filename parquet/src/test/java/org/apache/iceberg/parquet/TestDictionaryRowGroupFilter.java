@@ -208,6 +208,10 @@ public class TestDictionaryRowGroupFilter {
         NullPointerException.class,
         "Cannot create expression literal from null",
         () -> startsWith("col", null));
+    TestHelpers.assertThrows("Should reject null literal in notStartsWith expression",
+        NullPointerException.class,
+        "Cannot create expression literal from null",
+        () -> notStartsWith("col", null));
   }
 
   @Test
@@ -322,6 +326,10 @@ public class TestDictionaryRowGroupFilter {
     shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("no_nulls", "xxx"))
         .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
     Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, startsWith("no_nulls", ""))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
   }
 
   @Test
@@ -350,13 +358,21 @@ public class TestDictionaryRowGroupFilter {
 
     shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("required", "reqs"))
             .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
-    Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
 
     shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("some_nulls", "somex"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("some_nulls", "some"))
             .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
     Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
 
     shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("no_nulls", "xxx"))
+            .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
+    Assert.assertTrue("Should read: dictionary contains a matching entry", shouldRead);
+
+    shouldRead = new ParquetDictionaryRowGroupFilter(SCHEMA, notStartsWith("no_nulls", ""))
             .shouldRead(parquetSchema, rowGroupMetadata, dictionaryStore);
     Assert.assertFalse("Should skip: no match in dictionary", shouldRead);
   }

@@ -475,7 +475,7 @@ public class ParquetMetricsRowGroupFilter {
 
     @Override
     @SuppressWarnings("unchecked")
-    // TODO(kbendick) - This functioon needs testing / revisiting.
+    // TODO(kbendick) - This functioon is not currently correct.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
@@ -501,8 +501,7 @@ public class ParquetMetricsRowGroupFilter {
 
         Binary lower = colStats.genericGetMin();
 
-        // TODO(kbendick) - Is this lower != null check needed by this point in time?
-        if (lower != null && byteBufferStartsWithPrefix(lower.toByteBuffer(), prefixAsBytes, comparator)) {
+        if (byteBufferStartsWithPrefix(lower.toByteBuffer(), prefixAsBytes, comparator)) {
           Binary upper = colStats.genericGetMax();
           if (byteBufferStartsWithPrefix(upper.toByteBuffer(), prefixAsBytes, comparator)) {
             return ROWS_CANNOT_MATCH;
@@ -548,12 +547,6 @@ public class ParquetMetricsRowGroupFilter {
   //                  use this as well.
   private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix,
                                                     Comparator<ByteBuffer> comparator) {
-    if (bb == null || prefix == null) {
-      return false;  // nulls should not be included in the output of any starts with operation.
-    }
-    if (prefix.remaining() > bb.remaining()) {
-      return false;
-    }
     int length = Math.min(prefix.remaining(), bb.remaining());
     // truncate bb so that its length in bytes is not greater than the length of prefix
     int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
