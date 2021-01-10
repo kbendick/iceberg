@@ -29,13 +29,8 @@ import java.util.function.Predicate;
 import org.apache.iceberg.exceptions.RuntimeIOException;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public interface CloseableIterable<T> extends Iterable<T>, Closeable {
-
-  // TODO(kbendick) - Remove me.
-  Logger LOG = LoggerFactory.getLogger(CloseableIterable.class);
 
   /**
    * Returns an closeable iterator over elements of type {@code T}.
