@@ -20,6 +20,7 @@
 package org.apache.iceberg.util;
 
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 import org.apache.iceberg.expressions.Literal;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 
@@ -27,6 +28,41 @@ public class BinaryUtil {
   // not meant to be instantiated
   private BinaryUtil() {
   }
+
+  /**
+   * Evaluates a ByteBuffer to see if it begins with a given prefix.
+   * <p>
+   * This comparison is used when testing a value, typically an upperBound or lowerBound
+   * from some metrics, against a given {@link org.apache.iceberg.expressions.Predicate}
+   * when both the expression's {@link org.apache.iceberg.expressions.Term}, represented by
+   * {@param prefix}, and the value being tested, {@param value}, are best compared using
+   * their ByteBuffer representation. This is the case for values of type
+   * {@link org.apache.iceberg.types.Types.FixedType}, {@link org.apache.iceberg.types.Types.StringType},
+   * {@link org.apache.iceberg.types.Types.BinaryType}.
+   * <p>
+   * This method assumes that both {@param value} and the ByteBuffer from {@param prefix} have their
+   * current position at 0, or more exactly, have their position at the location for which we'd
+   * like to search for the remaining bytes of {@param prefix} in {@param value}.
+   * This assumption is typically valid when evaluating values of type
+   * {@link org.apache.iceberg.expressions.BoundLiteralPredicate}
+   * <p>
+   * The prefix is used to obtain the correct {@link Comparator}, though we assume
+   *
+   * @param value ByteBuffer to check for {@param prefix}
+   * @param prefix Literal the predicate term to search for when testing {@param value}
+   * @return true if {@param value} startsWith {@param prefix}.
+   */
+  // TODO(kbendick) - Probably overkill.
+  public static boolean startsWith(ByteBuffer value, Literal<ByteBuffer> prefix) {
+    Preconditions.checkNotNull(value, "Cannot compare a null ByteBuffer");
+    Preconditions.checkNotNull(prefix, "Cannot search for a null prefix in a ByteBuffer");
+    ByteBuffer prefixAsBytes = prefix.toByteBuffer();
+    Comparator<ByteBuffer> cmp = prefix.comparator();
+    int length = Math.min(prefixAsBytes.remaining(), value.remaining());
+    // truncate value so that its length in bytes is not greater than the length of prefix
+    return cmp.compare(truncateBinary(value, length), prefixAsBytes) == 0;
+  }
+
 
   /**
    * Truncates the input byte buffer to the given length

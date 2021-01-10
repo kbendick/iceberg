@@ -475,7 +475,6 @@ public class ParquetMetricsRowGroupFilter {
 
     @Override
     @SuppressWarnings("unchecked")
-    // TODO(kbendick) - This functioon is not currently correct.
     public <T> Boolean notStartsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
