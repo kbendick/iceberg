@@ -547,9 +547,15 @@ public class ParquetMetricsRowGroupFilter {
   //                  use this as well.
   private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix,
                                                     Comparator<ByteBuffer> comparator) {
+    // All non-null byte buffers start with the empty string.
+    // Useful for queries such as "data NOT LIKE '%'"
+    // TODO(kbendick) - Ensure that we want to allow this - otherwise ValidationException is thrown
+    if (prefix.remaining() == 0) {
+      return true;
+    }
     int length = Math.min(prefix.remaining(), bb.remaining());
     // truncate bb so that its length in bytes is not greater than the length of prefix
-    int cmp = comparator.compare(BinaryUtil.truncateBinary(prefix, length), bb);
+    int cmp = comparator.compare(BinaryUtil.truncateBinary(bb, length), prefix);
     return cmp == 0;
   }
 }
