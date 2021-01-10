@@ -44,8 +44,6 @@ public class TestManifestReaderStats extends TableTestBase {
     super(formatVersion);
   }
 
-  // TODO(kbendick) - Remove stats for col(ref=data, id=4) if not used.
-  // For the integer column $"id", id=3, and for the string column $"data", id=4
   private static final Map<Integer, Long> VALUE_COUNT = ImmutableMap.of(
           3, 3L,
           4, 3L);
@@ -90,11 +88,9 @@ public class TestManifestReaderStats extends TableTestBase {
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());
     }
-    // TODO(kbendick) - Either figure out how to add the column stats as a table option
-    //                  or remove this (they seem to be getting picked up anyway, but not
-    //                  sure if they're being used).
+
     try (ManifestReader<DataFile> reader = ManifestFiles.read(manifest, FILE_IO)
-            .filterRows(Expressions.notStartsWith("data", "Z"))) {
+        .filterRows(Expressions.notStartsWith("data", "Z"))) {
       CloseableIterable<ManifestEntry<DataFile>> entries = reader.entries();
       ManifestEntry<DataFile> entry = entries.iterator().next();
       assertFullStats(entry.file());

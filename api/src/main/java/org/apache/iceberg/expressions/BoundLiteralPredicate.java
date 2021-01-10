@@ -67,6 +67,9 @@ public class BoundLiteralPredicate<T> extends BoundPredicate<T> {
         return cmp.compare(value, literal.value()) == 0;
       case NOT_EQ:
         return cmp.compare(value, literal.value()) != 0;
+      // TODO(kbendick) - To add as a comment on the PR. Should we be using
+      //                  a comparator here? This seems like it could
+      //                  get iffy with non-ascii values.
       case STARTS_WITH:
         return String.valueOf(value).startsWith((String) literal.value());
       case NOT_STARTS_WITH:

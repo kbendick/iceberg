@@ -303,9 +303,6 @@ abstract class Truncate<T> implements Transform<T, T> {
         return Expressions.predicate(predicate.op(), name);
       } else if (predicate instanceof BoundLiteralPredicate) {
         BoundLiteralPredicate<CharSequence> pred = predicate.asLiteralPredicate();
-        // TODO(kbendick) - Is it worth it to have a pred.isStringPrefixPredicate function
-        //                  on BoundLiteralPredicate to clean this up a bit (similar to predicate.isSetPredicate()).
-        //                  Otherwise possibly find a way to clean this up as it's pretty ugly.
         if (isStringPrefixPredicate(pred)) {
           if (pred.literal().value().length() < width()) {
             return Expressions.predicate(pred.op(), name, pred.literal().value());

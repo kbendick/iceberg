@@ -717,11 +717,6 @@ public class TestMetricsRowGroupFilter {
 
     shouldRead = shouldRead(startsWith("str", "9str9aaa"));
     Assert.assertFalse("Should not read: range doesn't match", shouldRead);
-
-    // TODO(kbendick) - Do we want to allow this? Possibly in a follow up.
-    //                  See what spark does when we search for like ''.
-    shouldRead = shouldRead(startsWith("str", ""));
-    Assert.assertTrue("Should read: range matches", shouldRead);
   }
 
   @Test
@@ -755,10 +750,6 @@ public class TestMetricsRowGroupFilter {
     Assert.assertTrue("Should read: range matches", shouldRead);
 
     shouldRead = shouldRead(notStartsWith("some_nulls", "som"));
-    Assert.assertFalse("Should not read: range doesn't match", shouldRead);
-
-    // TODO(kbendick) - Do we want to allow this? Possibly in a follow up PR?
-    shouldRead = shouldRead(notStartsWith("no_nulls", ""));
     Assert.assertFalse("Should not read: range doesn't match", shouldRead);
   }
 

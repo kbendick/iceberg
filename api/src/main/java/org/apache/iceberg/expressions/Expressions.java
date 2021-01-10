@@ -65,9 +65,6 @@ public class Expressions {
     return new Or(left, right);
   }
 
-  // TODO(kbendick) - Might need to add a special case here for child instanceof StartsWith
-  //                  to return the notStartsWith implementation?
-  //                  Removing it with RewriteNot fixed a different test.
   public static Expression not(Expression child) {
     Preconditions.checkNotNull(child, "Child expression cannot be null.");
     if (child == alwaysTrue()) {
@@ -75,10 +72,6 @@ public class Expressions {
     } else if (child == alwaysFalse()) {
       return alwaysTrue();
     } else if (child instanceof Not) {
-      //  TODO(kbendick) - Adding this previously broke some tests. Can I remove it?
-      if (child.op() == Expression.Operation.STARTS_WITH) {
-        return child.negate();
-      }
       return ((Not) child).child();
     }
     return new Not(child);
