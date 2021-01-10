@@ -36,7 +36,6 @@ import org.apache.iceberg.io.CloseableIterable;
 import org.apache.iceberg.io.FileAppender;
 import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.parquet.ParquetSchemaUtil;
-import org.apache.iceberg.relocated.com.google.common.collect.ImmutableList;
 import org.apache.iceberg.relocated.com.google.common.collect.Iterables;
 import org.apache.iceberg.relocated.com.google.common.collect.Lists;
 import org.apache.iceberg.spark.SparkSchemaUtil;
@@ -110,7 +109,8 @@ public class TestSparkParquetReadMetadataColumns {
       EXPECTED_ROWS.add(row);
     }
 
-    // We filter for data notStartsWith str1, along the row group splits, to ensure that the row group metrics filter works
+    // We filter for data notStartsWith str1, along the row group splits, to test the row group metrics filter works
+    // before spark filters out individual rows.
     EXPECTED_ROWS_FOR_ROW_GROUP_FILTERED_WITH_SPLITS = Lists.newArrayListWithExpectedSize(NUM_ROW_GROUPS);
     for (int i = 0; i < NUM_ROW_GROUPS; i += 1) {
       boolean shouldReadRowGroup = EXPECTED_ROWS.subList(i * ROWS_PER_SPLIT, (i + 1) * ROWS_PER_SPLIT)
