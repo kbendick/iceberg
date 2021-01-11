@@ -40,7 +40,6 @@ import org.apache.iceberg.types.Types;
 import org.apache.iceberg.types.Types.NestedField;
 import org.apache.iceberg.types.Types.StringType;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.iceberg.TestHelpers.assertAndUnwrapUnbound;
@@ -54,8 +53,8 @@ public class TestNotStartsWith {
   private static final NestedField FIELD = optional(1, COLUMN, Types.StringType.get());
   private static final Schema SCHEMA = new Schema(FIELD);
 
-  // All 50 rows have someStringCol = 'bbb'.
-  private static final DataFile FILE = new TestDataFile("file.avro", Row.of(), 50,
+  // All 50 rows have someStringCol = 'bbb', none are null (despite being optional).
+  private static final DataFile FILE_1 = new TestDataFile("file_1.avro", Row.of(), 50,
           // any value counts, including nulls
           ImmutableMap.of(1, 50L),
           // null value counts
@@ -78,7 +77,6 @@ public class TestNotStartsWith {
     assertProjectionStrict(spec, notStartsWith(COLUMN, "ab"), "ab", Expression.Operation.NOT_STARTS_WITH);
     assertProjectionStrict(spec, notStartsWith(COLUMN, "abab"), "abab", Expression.Operation.NOT_EQ);
 
-    // Partition value is longer than width.
     Expression projection = Projections.strict(spec).project(notStartsWith(COLUMN, "abcde"));
     Assert.assertTrue(projection instanceof False);
   }
@@ -86,7 +84,8 @@ public class TestNotStartsWith {
   @Test
   // TODO(kbendick) - Rename, as this is really still checking against partition values.
   //                  Also finalize on a message format (I somewhat prefer the one in here).
-  public void testTruncateString() {
+  public void testTruncateStringWhenProjectedPredicateTermIsLongerThanWidth() {
+    // BoundLiteral is longer than truncation width.
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
     Expression expr = notStartsWith(COLUMN, "abcde");
     BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
@@ -95,48 +94,21 @@ public class TestNotStartsWith {
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
     Assert.assertFalse("truncate(abcde,2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("abcde"))));
-
-    Assert.assertTrue("truncate(azcde,2) notStartsWith abcde => true",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("azcde"))));
+            evaluator.eval(TestHelpers.Row.of("abcde")));
 
     Assert.assertFalse("truncate(ab, 2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("ab"))));
+            evaluator.eval(TestHelpers.Row.of("ab")));
 
     // truncate(abcdz, 2) notStartsWith abcde ==> ab notStartsWith ab
     Assert.assertFalse("notStartsWith(abcde, truncate(abcdz, 2)) => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("abcdz"))));
+            evaluator.eval(TestHelpers.Row.of("abcdz")));
 
     // truncate(a, 2) notStartsWith abcde ==> a notStartsWith ab
     Assert.assertTrue("notStartsWith(abcde, truncate(a, 2)) => true",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("a"))));
-  }
-
-  // TODO(kbendick) - Get rid of this test probably.
-  @Ignore
-  @Test
-  public void testUnpartitionedTruncatedRowEvaluator() {
-    Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
-    Expression expr = notStartsWith(COLUMN, "abcde");
-    BoundPredicate<String> evaluator = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
-
-    Assert.assertFalse("truncate(abcde,2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("abcde"))));
+            evaluator.eval(TestHelpers.Row.of("a")));
 
     Assert.assertTrue("truncate(azcde,2) notStartsWith abcde => true",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("azcde"))));
-
-    Assert.assertFalse("truncate(ab, 2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("ab"))));
-
-    // truncate(abcdz, 2) notStartsWith abcde ==> ab notStartsWith ab
-    Assert.assertFalse("notStartsWith(abcde, truncate(abcdz, 2)) => false",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("abcdz"))));
-
-    // truncate(a, 2) notStartsWith abcde ==> a notStartsWith ab
-    Assert.assertTrue("notStartsWith(abcde, truncate(a, 2)) => true",
-            evaluator.eval(TestHelpers.Row.of(trunc.apply("a"))));
-
+            evaluator.eval(TestHelpers.Row.of("azcde")));
   }
 
   @Test
@@ -156,68 +128,62 @@ public class TestNotStartsWith {
   }
 
   @Test
-  // TODO(kbendick) - Rename, consider helper for setting up prelude, and then
-  //                  finalize on a message format (I somewhat prefer the one in here).
-  public void testNotStartsWithWhenPredicateValueIsShorterThanTruncationWidth() {
+  public void testTruncateStringWhenProjectedPredicateTermIsShorterThanWidth() {
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 16);
     Expression expr = notStartsWith(COLUMN, "ab");
     BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
     UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
-    Assert.assertFalse("truncate(abcde, 16) notStartsWith ab => true",
+    Assert.assertFalse("notStartsWith(ab, truncate(abcde, 16)) => true",
             evaluator.eval(TestHelpers.Row.of("abcde")));
 
-    Assert.assertFalse("truncate(ab, 16) notStartsWith ab => false",
+    Assert.assertFalse("notStartsWith(ab, truncate(ab, 16)) => false",
             evaluator.eval(TestHelpers.Row.of("ab")));
 
-    Assert.assertTrue("truncate(a, 16) notStartsWith ab => true",
+    Assert.assertTrue("notStartsWith(ab, truncate(a, 16)) => true",
             evaluator.eval(TestHelpers.Row.of("a")));
   }
 
   @Test
-  // TODO(kbendick) - Rename, consider helper for setting up prelude, and then
-  //                  finalize on a message format (I somewhat prefer the one in here).
-  public void testNotStartsWithWhenPredicateValueIsLongerThanTruncationWidth() {
-    Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
+  public void testTruncateStringWhenProjectedPredicateTermIsEqualToWidth() {
+    Truncate<String> trunc = Truncate.get(Types.StringType.get(), 7);
     Expression expr = notStartsWith(COLUMN, "abcdefg");
     BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
     UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
-    // ab notStartsWith abcdefg is true, but bc of the truncation this should return false
-    // as obviously the value abcdefg could be inside of the partition due to the width.
-    Assert.assertFalse("truncate(abcdefg, 2) notStartsWith abcdefg => true",
+    Assert.assertFalse("notStartsWith(abcdefg, truncate(abcdefg, 7)) => false",
             evaluator.eval(TestHelpers.Row.of("abcdefg")));
 
-    Assert.assertFalse("truncate(ab, 2) notStartsWith abcdefg => false",
+    Assert.assertTrue("notStartsWith(abcdefg, truncate(ab, 2)) => true",
             evaluator.eval(TestHelpers.Row.of("ab")));
 
-    Assert.assertTrue("truncate(a, 16) notStartsWith abcdefg => true",
+    Assert.assertTrue("notStartsWith(abcdefg, truncate(a, 16)) => true",
             evaluator.eval(TestHelpers.Row.of("a")));
   }
 
   @Test
   public void testStrictMetricsEvaluatorForNotStartsWith() {
-    boolean shouldRead = new StrictMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbb")).eval(FILE);
+    boolean shouldRead = new StrictMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbb")).eval(FILE_1);
     Assert.assertFalse("Should not match: strict metrics eval is always false for notStartsWith", shouldRead);
   }
 
   @Test
   public void testInclusiveMetricsEvaluatorForNotStartsWith() {
-    boolean shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "aaa")).eval(FILE);
+    boolean shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "aaa")).eval(FILE_1);
     Assert.assertTrue("Should match: some columns meet the filter criteria", shouldRead);
 
-    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "b")).eval(FILE);
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "b")).eval(FILE_1);
     Assert.assertFalse("Should not match: no columns match the filter criteria", shouldRead);
 
-    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bb")).eval(FILE);
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bb")).eval(FILE_1);
     Assert.assertFalse("Should not match: no columns match the filter criteria", shouldRead);
 
-    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbb")).eval(FILE);
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbb")).eval(FILE_1);
     Assert.assertFalse("Should not match: no columns match the filter criteria", shouldRead);
 
-    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbbb")).eval(FILE);
+    shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith(COLUMN, "bbbb")).eval(FILE_1);
     Assert.assertTrue("Should match: some columns match the filter criteria", shouldRead);
   }
 
