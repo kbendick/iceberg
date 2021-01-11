@@ -457,7 +457,7 @@ public class TestFilteredScan {
     Table table = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
     CaseInsensitiveStringMap options = new CaseInsensitiveStringMap(ImmutableMap.of(
-            "path", table.location())
+        "path", table.location())
     );
 
     SparkScanBuilder builder = new SparkScanBuilder(spark, TABLES.load(options.get("path")), options);
