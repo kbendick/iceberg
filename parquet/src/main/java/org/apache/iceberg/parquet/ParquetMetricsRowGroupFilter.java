@@ -429,7 +429,6 @@ public class ParquetMetricsRowGroupFilter {
 
     @Override
     @SuppressWarnings("unchecked")
-    // TODO(kbendick) - Refactor to use the utility function.
     public <T> Boolean startsWith(BoundReference<T> ref, Literal<T> lit) {
       int id = ref.fieldId();
 
