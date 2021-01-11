@@ -111,23 +111,6 @@ public class TestSelect extends SparkCatalogTestBase {
   }
 
   @Test
-  public void testStartsWithExpressionPushdown() {
-    List<Object[]> expected = ImmutableList.of(row("b"));
-    List<Object[]> actual = sql("SELECT data from " + tableName + " WHERE data LIKE 'b%'");
-
-    assertEquals("Should return all expected rows", expected, actual);
-    Assert.assertEquals("Should create only one scan", 1, scanEventCount);
-    // TODO(kbendick) - This doesn't feel correct. Shouldn't this be DATA LIKE 'b%'?
-    // TODO - We need to implement proper equals and hashCode on filters
-    Assert.assertEquals("Should push down expected filter",
-            "(data IS NOT NULL AND data LIKE '\"b\"%')",
-            Spark3Util.describe(lastScanEvent.filter()));
-    Assert.assertEquals("Should project only data column",
-            validationCatalog.loadTable(tableIdent).schema().select("data").asStruct(),
-            lastScanEvent.projection().asStruct());
-  }
-
-  @Test
   public void testMetadataTables() {
     Assume.assumeFalse(
         "Spark session catalog does not support metadata tables",

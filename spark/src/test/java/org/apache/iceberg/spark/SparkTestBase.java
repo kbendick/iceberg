@@ -89,19 +89,6 @@ public abstract class SparkTestBase {
     return current;
   }
 
-  protected List<Object[]> sql(String query) {
-    List<Row> rows = spark.sql(query).collectAsList();
-    if (rows.size() < 1) {
-      return ImmutableList.of();
-    }
-
-    return rows.stream()
-            .map(row -> IntStream.range(0, row.size())
-                    .mapToObj(pos -> row.isNullAt(pos) ? null : row.get(pos))
-                    .toArray(Object[]::new)
-            ).collect(Collectors.toList());
-  }
-
   protected List<Object[]> sql(String query, Object... args) {
     List<Row> rows = spark.sql(String.format(query, args)).collectAsList();
     if (rows.size() < 1) {

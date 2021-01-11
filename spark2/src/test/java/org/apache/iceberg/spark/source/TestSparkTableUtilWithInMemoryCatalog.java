@@ -58,7 +58,6 @@ import org.junit.rules.TemporaryFolder;
 import static org.apache.iceberg.types.Types.NestedField.optional;
 import static org.apache.iceberg.types.Types.NestedField.required;
 
-// TODO(kbendick) - Consider adding my metrics test here as there's a helper for it.
 public class TestSparkTableUtilWithInMemoryCatalog {
 
   private static final HadoopTables TABLES = new HadoopTables(new Configuration());
