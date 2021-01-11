@@ -48,7 +48,6 @@ import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.or;
 
-// TODO(kbendick) - Need to add transforms tests for notStartsWith (somewhere in this test module)
 public class TestResiduals {
   @Test
   public void testIdentityTransformResiduals() {
@@ -159,6 +158,8 @@ public class TestResiduals {
         Expressions.notIn("f", 1, 2, 3),
         Expressions.notNaN("g"),
         Expressions.isNaN("h"),
+        Expressions.startsWith("data", "abcd"),
+        Expressions.notStartsWith("data", "abcd")
     };
 
     for (Expression expr : expressions) {
