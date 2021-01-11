@@ -30,38 +30,6 @@ public class BinaryUtil {
   }
 
   /**
-   * Evaluates a ByteBuffer to see if it begins with a given prefix.
-   * <p>
-   * This comparison is used when testing a value, typically an upperBound or lowerBound
-   * from some metrics, against a given {@link org.apache.iceberg.expressions.Predicate}
-   * when both the expression's {@link org.apache.iceberg.expressions.Term}, represented by
-   * {@param prefix}, and the value being tested, {@param value}, are best compared using
-   * their ByteBuffer representation. This is the case for values of type
-   * {@link org.apache.iceberg.types.Types.FixedType}, {@link org.apache.iceberg.types.Types.StringType},
-   * {@link org.apache.iceberg.types.Types.BinaryType}.
-   * <p>
-   * This method assumes that both {@param value} and the ByteBuffer from {@param prefix} have their
-   * current position at 0, or more exactly, have their position at the location for which we'd
-   * like to search for the remaining bytes of {@param prefix} in {@param value}.
-   * This assumption is typically valid when evaluating values of type
-   * {@link org.apache.iceberg.expressions.BoundLiteralPredicate}
-   * <p>
-   * The prefix is used to obtain the correct {@link Comparator}, though we assume
-   *
-   * @param value ByteBuffer to check for {@param prefix}
-   * @param prefix ByteBuffer the predicate term to search for at the start of {@param value}
-   * @return true if {@param value} startsWith {@param prefix}.
-   */
-  public static boolean startsWith(ByteBuffer value, ByteBuffer prefix, Comparator<ByteBuffer> cmp) {
-    Preconditions.checkNotNull(value, "Cannot compare a null ByteBuffer");
-    Preconditions.checkNotNull(prefix, "Cannot search for a null prefix in a ByteBuffer");
-    int length = Math.min(prefix.remaining(), value.remaining());
-    // truncate value so that its length in bytes is not greater than the length of prefix
-    return cmp.compare(truncateBinary(value, length), prefix) == 0;
-  }
-
-
-  /**
    * Truncates the input byte buffer to the given length
    */
   public static ByteBuffer truncateBinary(ByteBuffer input, int length) {
