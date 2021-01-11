@@ -82,8 +82,6 @@ public class TestNotStartsWith {
   }
 
   @Test
-  // TODO(kbendick) - Rename, as this is really still checking against partition values.
-  //                  Also finalize on a message format (I somewhat prefer the one in here).
   public void testTruncateStringWhenProjectedPredicateTermIsLongerThanWidth() {
     // BoundLiteral is longer than truncation width.
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
@@ -109,22 +107,6 @@ public class TestNotStartsWith {
 
     Assert.assertTrue("truncate(azcde,2) notStartsWith abcde => true",
             evaluator.eval(TestHelpers.Row.of("azcde")));
-  }
-
-  @Test
-  public void testNotStartsWithWhenValueIsLongerThanWidth() {
-    Truncate<String> trunc = Truncate.get(Types.StringType.get(), 1);
-    Expression expr = notStartsWith(COLUMN, "ab");
-    BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
-    UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
-    Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
-
-    Assert.assertFalse("notStartsWith(ab, truncate(abcde, 1)) => false",
-            evaluator.eval(TestHelpers.Row.of("abcde")));
-
-    // a notStartsWith a => false
-    Assert.assertFalse("notStartsWith(ab, truncate(abc, 1)) => false",
-            evaluator.eval(TestHelpers.Row.of("abc")));
   }
 
   @Test
