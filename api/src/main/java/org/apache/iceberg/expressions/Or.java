@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.expressions;
 
+import java.util.Objects;
+
 public class Or implements Expression {
   private final Expression left;
   private final Expression right;
@@ -45,6 +47,24 @@ public class Or implements Expression {
   public Expression negate() {
     // not(or(a, b)) => and(not(a), not(b))
     return Expressions.and(left.negate(), right.negate());
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    } else if (!(other instanceof Or)) {
+      return false;
+    }
+
+    Or that = (Or) other;
+    return Objects.equals(left, that.left) &&
+        Objects.equals(right, that.right);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(left, right);
   }
 
   @Override
