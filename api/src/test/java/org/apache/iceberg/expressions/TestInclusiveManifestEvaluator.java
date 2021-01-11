@@ -45,6 +45,7 @@ import static org.apache.iceberg.expressions.Expressions.notEqual;
 import static org.apache.iceberg.expressions.Expressions.notIn;
 import static org.apache.iceberg.expressions.Expressions.notNaN;
 import static org.apache.iceberg.expressions.Expressions.notNull;
+import static org.apache.iceberg.expressions.Expressions.notStartsWith;
 import static org.apache.iceberg.expressions.Expressions.or;
 import static org.apache.iceberg.expressions.Expressions.startsWith;
 import static org.apache.iceberg.types.Conversions.toByteBuffer;
@@ -58,7 +59,8 @@ public class TestInclusiveManifestEvaluator {
       optional(5, "some_nulls", Types.StringType.get()),
       optional(6, "no_nulls", Types.StringType.get()),
       optional(7, "float", Types.FloatType.get()),
-      optional(8, "all_nulls_double", Types.DoubleType.get())
+      optional(8, "all_nulls_double", Types.DoubleType.get()),
+      optional(9, "all_same_value_or_null", Types.StringType.get())
   );
 
   private static final PartitionSpec SPEC = PartitionSpec.builderFor(SCHEMA)
@@ -69,6 +71,7 @@ public class TestInclusiveManifestEvaluator {
       .identity("no_nulls")
       .identity("float")
       .identity("all_nulls_double")
+      .identity("all_same_value_or_null")
       .build();
 
   private static final int INT_MIN_VALUE = 30;
@@ -92,7 +95,8 @@ public class TestInclusiveManifestEvaluator {
           new TestHelpers.TestFieldSummary(false,
               toByteBuffer(Types.FloatType.get(), 0F),
               toByteBuffer(Types.FloatType.get(), 20F)),
-          new TestHelpers.TestFieldSummary(true, null, null)
+          new TestHelpers.TestFieldSummary(true, null, null),
+          new TestHelpers.TestFieldSummary(true, STRING_MIN, STRING_MIN)
       ));
 
   @Test
@@ -108,6 +112,9 @@ public class TestInclusiveManifestEvaluator {
 
     shouldRead = ManifestEvaluator.forRowFilter(startsWith("all_nulls", "asad"), SPEC, true).eval(FILE);
     Assert.assertFalse("Should skip: startsWith on all null column", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_nulls", "asad"), SPEC, true).eval(FILE);
+    Assert.assertFalse("Should skip: notStartsWith on all null column", shouldRead);
   }
 
   @Test
@@ -153,7 +160,7 @@ public class TestInclusiveManifestEvaluator {
         lessThan("id", 5), lessThanOrEqual("id", 30), equal("id", 70),
         greaterThan("id", 78), greaterThanOrEqual("id", 90), notEqual("id", 101),
         isNull("id"), notNull("id"), startsWith("all_nulls", "a"),
-        isNaN("float"), notNaN("float")
+        notStartsWith("all_nulls", "a"), isNaN("float"), notNaN("float")
     };
 
     for (Expression expr : exprs) {
@@ -387,6 +394,39 @@ public class TestInclusiveManifestEvaluator {
 
     shouldRead = ManifestEvaluator.forRowFilter(startsWith("some_nulls", "1"), SPEC, false).eval(FILE);
     Assert.assertFalse("Should skip: range doesn't match", shouldRead);
+  }
+
+  @Test
+  public void testStringNotStartsWith() {
+    boolean shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "a"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "aa"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "dddd"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "z"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("no_nulls", "a"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "zzzz"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("some_nulls", "1"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "a"), SPEC, false).eval(FILE);
+    Assert.assertFalse("Should skip: range doesn't match", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "aa"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
+
+    shouldRead = ManifestEvaluator.forRowFilter(notStartsWith("all_same_value_or_null", "A"), SPEC, false).eval(FILE);
+    Assert.assertTrue("Should read: range matches", shouldRead);
   }
 
   @Test
