@@ -19,6 +19,8 @@
 
 package org.apache.iceberg.expressions;
 
+import java.util.Objects;
+
 public class Not implements Expression {
   private final Expression child;
 
@@ -43,5 +45,23 @@ public class Not implements Expression {
   @Override
   public String toString() {
     return String.format("not(%s)", child);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    } else if (!(other instanceof Not)) {
+      return false;
+    }
+
+    Not that = (Not) other;
+    return child.getClass() == that.child.getClass() &&
+        Objects.equals(this.child, that.child);
+  }
+
+  @Override
+  public int hashCode() {
+    Objects.hashCode(child);
   }
 }
