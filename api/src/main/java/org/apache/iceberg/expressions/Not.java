@@ -62,6 +62,6 @@ public class Not implements Expression {
 
   @Override
   public int hashCode() {
-    Objects.hashCode(child);
+    return Objects.hashCode(child);
   }
 }

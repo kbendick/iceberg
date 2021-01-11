@@ -20,6 +20,7 @@
 package org.apache.iceberg.expressions;
 
 import java.io.ObjectStreamException;
+import java.util.Objects;
 
 /**
  * An {@link Expression expression} that is always true.
@@ -43,6 +44,16 @@ public class True implements Expression {
   @Override
   public String toString() {
     return "true";
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    return other instanceof True;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(toString());
   }
 
   Object writeReplace() throws ObjectStreamException {
