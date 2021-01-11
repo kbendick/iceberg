@@ -52,7 +52,6 @@ public class BinaryUtil {
    * @param prefix Literal the predicate term to search for when testing {@param value}
    * @return true if {@param value} startsWith {@param prefix}.
    */
-  // TODO(kbendick) - Probably overkill.
   public static boolean startsWith(ByteBuffer value, Literal<ByteBuffer> prefix) {
     Preconditions.checkNotNull(value, "Cannot compare a null ByteBuffer");
     Preconditions.checkNotNull(prefix, "Cannot search for a null prefix in a ByteBuffer");
