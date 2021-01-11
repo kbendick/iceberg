@@ -534,7 +534,7 @@ public class TestInclusiveMetricsEvaluator {
   }
 
   @Test
-  // TODO(kbendick) - Update these tests. It's just a copy paste of the startsWith tests at the moment.
+  // More interesting test cases are included in TestNotStartsWith
   public void testStringNotStartsWith() {
     boolean shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", "a"), true).eval(FILE);
     Assert.assertTrue("Should read: no stats", shouldRead);
@@ -572,10 +572,6 @@ public class TestInclusiveMetricsEvaluator {
     String aboveMax = UnicodeUtil.truncateStringMax(Literal.of("イロハニホヘト"), 4).value().toString();
     shouldRead = new InclusiveMetricsEvaluator(SCHEMA, notStartsWith("required", aboveMax), true).eval(FILE_4);
     Assert.assertTrue("Should read: range matches", shouldRead);
-
-    // TODO(kbendick) - When pick up - move additional file test that has equivalent up and down bounds
-    //                  into this test suite. Also add files that vary in the different sets of stats offered
-    //                  to ensure all cases are considered.
   }
 
   @Test

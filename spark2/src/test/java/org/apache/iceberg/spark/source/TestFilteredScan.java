@@ -474,13 +474,11 @@ public class TestFilteredScan {
   }
 
   @Test
-  // Spark does not have an explicit NotStringStartsWith, it's just NOT StringStartsWith.
-  // Given that iceberg has an explicit NOT_STARTS_WITH operator, this test seems useful.
   public void testPartitionedByDataNotStartsWithFilter() {
     File location = buildPartitionedTable("partitioned_by_data", PARTITION_BY_DATA, "data_ident", "data");
 
     DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
-            "path", location.toString())
+        "path", location.toString())
     );
 
     IcebergSource source = new IcebergSource();
@@ -510,7 +508,7 @@ public class TestFilteredScan {
     File location = buildPartitionedTable("partitioned_by_id", PARTITION_BY_ID, "id_ident", "id");
 
     DataSourceOptions options = new DataSourceOptions(ImmutableMap.of(
-            "path", location.toString()
+        "path", location.toString()
     ));
 
     IcebergSource source = new IcebergSource();

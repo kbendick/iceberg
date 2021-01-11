@@ -49,17 +49,15 @@ public class BinaryUtil {
    * The prefix is used to obtain the correct {@link Comparator}, though we assume
    *
    * @param value ByteBuffer to check for {@param prefix}
-   * @param prefix Literal the predicate term to search for when testing {@param value}
+   * @param prefix ByteBuffer the predicate term to search for at the start of {@param value}
    * @return true if {@param value} startsWith {@param prefix}.
    */
-  public static boolean startsWith(ByteBuffer value, Literal<ByteBuffer> prefix) {
+  public static boolean startsWith(ByteBuffer value, ByteBuffer prefix, Comparator<ByteBuffer> cmp) {
     Preconditions.checkNotNull(value, "Cannot compare a null ByteBuffer");
     Preconditions.checkNotNull(prefix, "Cannot search for a null prefix in a ByteBuffer");
-    ByteBuffer prefixAsBytes = prefix.toByteBuffer();
-    Comparator<ByteBuffer> cmp = prefix.comparator();
-    int length = Math.min(prefixAsBytes.remaining(), value.remaining());
+    int length = Math.min(prefix.remaining(), value.remaining());
     // truncate value so that its length in bytes is not greater than the length of prefix
-    return cmp.compare(truncateBinary(value, length), prefixAsBytes) == 0;
+    return cmp.compare(truncateBinary(value, length), prefix) == 0;
   }
 
 

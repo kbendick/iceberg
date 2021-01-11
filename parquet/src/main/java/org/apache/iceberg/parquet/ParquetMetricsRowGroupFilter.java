@@ -499,10 +499,16 @@ public class ParquetMetricsRowGroupFilter {
         Comparator<ByteBuffer> comparator = Comparators.unsignedBytes();
 
         Binary lower = colStats.genericGetMin();
-
-        if (byteBufferStartsWithPrefix(lower.toByteBuffer(), prefixAsBytes, comparator)) {
+        // truncate lower bound so that its length in bytes is not greater than the length of prefix
+        int lowerLength = Math.min(prefixAsBytes.remaining(), lower.length());
+        int lowerCmp = comparator.compare(BinaryUtil.truncateBinary(lower.toByteBuffer(), lowerLength), prefixAsBytes);
+        if (lowerCmp == 0) {
           Binary upper = colStats.genericGetMax();
-          if (byteBufferStartsWithPrefix(upper.toByteBuffer(), prefixAsBytes, comparator)) {
+          // truncate upper bound so that its length in bytes is not greater than the length of prefix
+          int upperLength = Math.min(prefixAsBytes.remaining(), upper.length());
+          ByteBuffer upperByteBuffer = upper.toByteBuffer();
+          int upperCmp = comparator.compare(BinaryUtil.truncateBinary(upperByteBuffer, upperLength), prefixAsBytes);
+          if (upperCmp == 0) {
             return ROWS_CANNOT_MATCH;
           }
         }
@@ -540,21 +546,5 @@ public class ParquetMetricsRowGroupFilter {
   static boolean hasNonNullButNoMinMax(Statistics statistics, long valueCount) {
     return statistics.getNumNulls() < valueCount &&
         (statistics.getMaxBytes() == null || statistics.getMinBytes() == null);
-  }
-
-  // TODO(kbendick) - Document and possibly move to the BinaryUtil. Also consider refactoring startsWith to
-  //                  use this as well.
-  private static boolean byteBufferStartsWithPrefix(ByteBuffer bb, ByteBuffer prefix,
-                                                    Comparator<ByteBuffer> comparator) {
-    // All non-null byte buffers start with the empty string.
-    // Useful for queries such as "data NOT LIKE '%'"
-    // TODO(kbendick) - Ensure that we want to allow this - otherwise ValidationException is thrown
-    if (prefix.remaining() == 0) {
-      return true;
-    }
-    int length = Math.min(prefix.remaining(), bb.remaining());
-    // truncate bb so that its length in bytes is not greater than the length of prefix
-    int cmp = comparator.compare(BinaryUtil.truncateBinary(bb, length), prefix);
-    return cmp == 0;
   }
 }

@@ -46,6 +46,13 @@ import org.junit.runners.Parameterized;
 
 import static org.apache.iceberg.types.Types.NestedField.required;
 
+/**
+ * This is a reimplementation of the spark based test
+ * {@link org.apache.iceberg.spark.source.TestFilteredScan#testPartitionedByIdNotStartsWith()}
+ * <p>
+ * Likely we can remove this test as it doesn't provide much value given that we have the other
+ * test.
+ */
 @RunWith(Parameterized.class)
 public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
 
@@ -125,16 +132,6 @@ public class TestManifestReaderFilterPartitionsOnNonPartitionColumns {
     TestTables.clearTables();
   }
 
-  // TODO(kbendick) - Other classes to check out
-  //                     - InclusiveMetricsEvaluator
-  //                     - InclusiveManifestEvaluator
-  //                     - ProjectionDatumReader
-  //                     - AvroIterable
-  //                     - FilterIterator
-  //                     - org.apache.iceberg.avro.ValueReaders$StructReader
-  // This is similar to the spark based test
-  // TestFilteredScan.testPartitionedByIdNotStartsWith, but without spark
-  // and with more filters.
   @Test
   public void testReaderWithFilterWithoutSelect() throws IOException {
     // Write manifest file directly.

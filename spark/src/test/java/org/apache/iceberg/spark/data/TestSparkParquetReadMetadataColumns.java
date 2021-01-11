@@ -77,7 +77,8 @@ public class TestSparkParquetReadMetadataColumns {
   private static final int NUM_ROWS = 1000;
   private static final List<InternalRow> DATA_ROWS;
   private static final List<InternalRow> EXPECTED_ROWS;
-  // We filter for $"data" notStartsWith str1, along the row group splits, to validate that the row group filter works
+  // We filter for $"data" notStartsWith str1, along the row group splits, to ensure the row group
+  // filter works before rows are individually evaluated
   private static final List<List<InternalRow>> EXPECTED_ROWS_FOR_ROW_GROUP_FILTERED_WITH_SPLITS;
   private static final int NUM_ROW_GROUPS = 10;
   private static final int ROWS_PER_SPLIT = NUM_ROWS / NUM_ROW_GROUPS;
@@ -109,8 +110,6 @@ public class TestSparkParquetReadMetadataColumns {
       EXPECTED_ROWS.add(row);
     }
 
-    // We filter for data notStartsWith str1, along the row group splits, to test the row group metrics filter works
-    // before spark filters out individual rows.
     EXPECTED_ROWS_FOR_ROW_GROUP_FILTERED_WITH_SPLITS = Lists.newArrayListWithExpectedSize(NUM_ROW_GROUPS);
     for (int i = 0; i < NUM_ROW_GROUPS; i += 1) {
       boolean shouldReadRowGroup = EXPECTED_ROWS.subList(i * ROWS_PER_SPLIT, (i + 1) * ROWS_PER_SPLIT)
@@ -190,6 +189,7 @@ public class TestSparkParquetReadMetadataColumns {
           EXPECTED_ROWS.subList(i * ROWS_PER_SPLIT, NUM_ROWS / 2));
     }
 
+    // No row group matches
     readAndValidate(Expressions.notStartsWith("data", "str"), null, null, Lists.newArrayList());
   }
 
