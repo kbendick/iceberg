@@ -78,7 +78,6 @@ class ParquetFilters {
       } else if (child == AlwaysFalse.INSTANCE) {
         return AlwaysTrue.INSTANCE;
       }
-      // TODO(kbendick) - Do we need to handle NOT_STARTS_WITH as a special case here?
       return FilterApi.not(child);
     }
 
@@ -111,11 +110,6 @@ class ParquetFilters {
     }
 
     @Override
-    // TODO(kbendick) - Can we use org.apache.parquet.filter2.predicate.UserDefined for STARTS_WITH
-    //                  and org.apache.parquet.filter2.predicate.LogicalNotUserDefined for NOT_STARTS_WITH
-    //                  support?
-    // TODO(kbendick) - Make the above a new ticket (or discuss with somebody first) and then
-    //                  remove from thsi cleanup branch.
     public <T> FilterPredicate predicate(BoundPredicate<T> pred) {
       if (!(pred.term() instanceof BoundReference)) {
         throw new UnsupportedOperationException("Cannot convert non-reference to Parquet filter: " + pred.term());
