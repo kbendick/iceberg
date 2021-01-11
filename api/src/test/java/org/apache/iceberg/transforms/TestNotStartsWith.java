@@ -83,7 +83,6 @@ public class TestNotStartsWith {
 
   @Test
   public void testTruncateStringWhenProjectedPredicateTermIsLongerThanWidth() {
-    // BoundLiteral is longer than truncation width.
     Truncate<String> trunc = Truncate.get(Types.StringType.get(), 2);
     Expression expr = notStartsWith(COLUMN, "abcde");
     BoundPredicate<String> boundExpr = (BoundPredicate<String>) Binder.bind(SCHEMA.asStruct(),  expr, false);
@@ -91,22 +90,20 @@ public class TestNotStartsWith {
     UnboundPredicate<String> projected = trunc.project(COLUMN, boundExpr);
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
-    Assert.assertFalse("truncate(abcde,2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of("abcde")));
+    Assert.assertFalse("notStartsWith(abcde, truncate(abcde,2)) => false",
+        evaluator.eval(TestHelpers.Row.of("abcde")));
 
-    Assert.assertFalse("truncate(ab, 2) notStartsWith abcde => false",
-            evaluator.eval(TestHelpers.Row.of("ab")));
+    Assert.assertFalse("notStartsWith(abcde, truncate(ab, 2)) => false",
+        evaluator.eval(TestHelpers.Row.of("ab")));
 
-    // truncate(abcdz, 2) notStartsWith abcde ==> ab notStartsWith ab
     Assert.assertFalse("notStartsWith(abcde, truncate(abcdz, 2)) => false",
-            evaluator.eval(TestHelpers.Row.of("abcdz")));
+        evaluator.eval(TestHelpers.Row.of("abcdz")));
 
-    // truncate(a, 2) notStartsWith abcde ==> a notStartsWith ab
     Assert.assertTrue("notStartsWith(abcde, truncate(a, 2)) => true",
-            evaluator.eval(TestHelpers.Row.of("a")));
+        evaluator.eval(TestHelpers.Row.of("a")));
 
-    Assert.assertTrue("truncate(azcde,2) notStartsWith abcde => true",
-            evaluator.eval(TestHelpers.Row.of("azcde")));
+    Assert.assertTrue("notStartsWith(abcde, truncate(abzcde, 2)) => true",
+        evaluator.eval(TestHelpers.Row.of("azcde")));
   }
 
   @Test
@@ -118,13 +115,13 @@ public class TestNotStartsWith {
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
     Assert.assertFalse("notStartsWith(ab, truncate(abcde, 16)) => true",
-            evaluator.eval(TestHelpers.Row.of("abcde")));
+        evaluator.eval(TestHelpers.Row.of("abcde")));
 
     Assert.assertFalse("notStartsWith(ab, truncate(ab, 16)) => false",
-            evaluator.eval(TestHelpers.Row.of("ab")));
+        evaluator.eval(TestHelpers.Row.of("ab")));
 
     Assert.assertTrue("notStartsWith(ab, truncate(a, 16)) => true",
-            evaluator.eval(TestHelpers.Row.of("a")));
+        evaluator.eval(TestHelpers.Row.of("a")));
   }
 
   @Test
@@ -136,13 +133,13 @@ public class TestNotStartsWith {
     Evaluator evaluator = new Evaluator(SCHEMA.asStruct(), projected);
 
     Assert.assertFalse("notStartsWith(abcdefg, truncate(abcdefg, 7)) => false",
-            evaluator.eval(TestHelpers.Row.of("abcdefg")));
+        evaluator.eval(TestHelpers.Row.of("abcdefg")));
 
     Assert.assertTrue("notStartsWith(abcdefg, truncate(ab, 2)) => true",
-            evaluator.eval(TestHelpers.Row.of("ab")));
+        evaluator.eval(TestHelpers.Row.of("ab")));
 
     Assert.assertTrue("notStartsWith(abcdefg, truncate(a, 16)) => true",
-            evaluator.eval(TestHelpers.Row.of("a")));
+        evaluator.eval(TestHelpers.Row.of("a")));
   }
 
   @Test
