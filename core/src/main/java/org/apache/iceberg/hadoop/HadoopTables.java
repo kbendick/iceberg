@@ -94,6 +94,11 @@ public class HadoopTables implements Tables, Configurable {
     return result;
   }
 
+  @Override
+  public boolean exists(String location) {
+    return newTableOps(location).current() != null;
+  }
+
   /**
    * Try to resolve a metadata table, which we encode as URI fragments
    * e.g. hdfs:///warehouse/my_table#snapshots
@@ -339,9 +344,9 @@ public class HadoopTables implements Tables, Configurable {
       Map<String, String> properties = propertiesBuilder.build();
       TableMetadata metadata;
       if (ops.current() != null) {
-        metadata = ops.current().buildReplacement(schema, spec, SortOrder.unsorted(), location, properties);
+        metadata = ops.current().buildReplacement(schema, spec, sortOrder, location, properties);
       } else {
-        metadata = tableMetadata(schema, spec, null, properties, location);
+        metadata = tableMetadata(schema, spec, sortOrder, properties, location);
       }
 
       if (orCreate) {
