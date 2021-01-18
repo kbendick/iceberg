@@ -71,24 +71,33 @@ public class TestMetricsSerialization {
   }
 
   private static Metrics generateMetrics() {
+    // Column sizes
     Map<Integer, Long> longMap1 = new HashMap<>();
     longMap1.put(1, 2L);
     longMap1.put(3, 4L);
 
+    // Value counts
     Map<Integer, Long> longMap2 = new HashMap<>();
     longMap2.put(5, 6L);
 
+    // Null value counts
     Map<Integer, Long> longMap3 = new HashMap<>();
     longMap3.put(7, 8L);
 
+    // NaN value counts
+    Map<Integer, Long> longMap4 = new HashMap<>();
+    longMap4.put(1, 1L);
+
+    // Lower bounds
     Map<Integer, ByteBuffer> byteMap1 = new HashMap<>();
     byteMap1.put(1, ByteBuffer.wrap(new byte[] {1, 2, 3}));
     byteMap1.put(2, ByteBuffer.wrap(new byte[] {1, 2, 3, 4}));
 
+    // Upper bounds
     Map<Integer, ByteBuffer> byteMap2 = new HashMap<>();
     byteMap1.put(3, ByteBuffer.wrap(new byte[] {1, 2}));
 
-    return new Metrics(0L, longMap1, longMap2, longMap3, byteMap1, byteMap2);
+    return new Metrics(0L, longMap1, longMap2, longMap3, longMap4, byteMap1, byteMap2);
   }
 
   private static Metrics generateMetricsWithNulls() {
@@ -100,7 +109,7 @@ public class TestMetricsSerialization {
     byteMap.put(null, ByteBuffer.wrap(new byte[] {1, 2, 3}));
     byteMap.put(4, null);
 
-    return new Metrics(null, null, longMap, longMap, null, byteMap);
+    return new Metrics(null, null, longMap, longMap, null, null, byteMap);
   }
 
   private static void assertEquals(Metrics expected, Metrics actual) {

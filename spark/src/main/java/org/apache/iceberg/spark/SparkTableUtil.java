@@ -340,7 +340,7 @@ public class SparkTableUtil {
       return Arrays.stream(fs.listStatus(partition, HIDDEN_PATH_FILTER))
           .filter(FileStatus::isFile)
           .map(stat -> {
-            Metrics metrics = new Metrics(-1L, null, null, null);
+            Metrics metrics = new Metrics(-1L, null, null, null, null);
             String partitionKey = spec.fields().stream()
                 .map(PartitionField::name)
                 .map(name -> String.format("%s=%s", name, partitionPath.get(name)))

@@ -115,6 +115,7 @@ public class OrcMetrics {
           valueCounts,
           nullCounts,
           null,
+          null,
           null);
     }
 
@@ -167,6 +168,7 @@ public class OrcMetrics {
         columnSizes,
         valueCounts,
         nullCounts,
+        null,
         lowerBounds,
         upperBounds);
   }

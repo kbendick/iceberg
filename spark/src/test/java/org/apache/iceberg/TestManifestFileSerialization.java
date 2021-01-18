@@ -69,6 +69,7 @@ public class TestManifestFileSerialization {
           null, // no column sizes
           ImmutableMap.of(1, 5L, 2, 3L), // value count
           ImmutableMap.of(1, 0L, 2, 2L), // null count
+          ImmutableMap.of(), // NaN counts
           ImmutableMap.of(1, longToBuffer(0L)), // lower bounds
           ImmutableMap.of(1, longToBuffer(4L)) // upper bounds
       ))
